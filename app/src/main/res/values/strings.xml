@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Football TV</string>
+
+    <string name="Admob_App_ID">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="TopOnAppID" translatable="false">h68b226290a6e0</string>
+    <string name="TopOnAppKEY" translatable="false">a98d914c6aea98703be4773a24c68210d</string>
+    <string name="TopOnBanner" translatable="false">n68b2263ed9544</string>
+    <string name="TopOnInterstitial" translatable="false">n68b2263f4f55b</string>
+
+    <string name="about_us">About Us</string>
+    <string name="about_us_text">live football is an app that provides you Live score, schedule and leagues.</string>
+    <string name="age">Age</string>
+    <string name="away">Away</string>
+    <string name="back">Back</string>
+
+    <string name="clear_text_end_icon_content_description">Clear text</string>
+
+    <string name="copy_toast_msg">Link copied to clipboard</string>
+    <string name="country">Country</string>
+    <string name="defence">Defence</string>
+    <string name="draw">Draw</string>
+    <string name="admob_banner">0000000000000000000000000000000000</string>
+    <string name="admob_inters">0000000000000000000000000000000</string>
+    <string name="admob_app_open">00000000000000000000000000</string>
+    <string name="exposed_dropdown_menu_content_description">Show dropdown menu</string>
+    <string name="fallback_menu_item_copy_link">Copy link</string>
+    <string name="fallback_menu_item_open_in_browser">Open in browser</string>
+    <string name="fallback_menu_item_share_link">Share link</string>
+    <string name="fcm_fallback_notification_channel_label">Miscellaneous</string>
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="gmts_ad_format_load_success_title">%1$s ad loaded successfully</string>
+    <string name="gmts_ad_load">Ad Load</string>
+    <string name="gmts_ad_load_in_progress_title">Loading ad...</string>
+    <string name="gmts_ad_source_custom_event_title_format">Custom Event: %1$s</string>
+    <string name="gmts_ad_unit_details_title">Ad Unit Details</string>
+    <string name="gmts_ad_unit_format_label_format">%1$s ad unit</string>
+    <string name="gmts_ad_unit_id">Ad unit ID</string>
+    <string name="gmts_ad_units">Ad Units</string>
+    <string name="gmts_adapter">Adapter</string>
+    <string name="gmts_adapter_initialization_status">Adapter Initialization Status</string>
+    <string name="gmts_button_agree">Agree</string>
+    <string name="gmts_button_cancel">Cancel</string>
+    <string name="gmts_button_load_ad">Load Ad</string>
+    <string name="gmts_button_load_ads">Load Ads</string>
+    <string name="gmts_button_ok">OK</string>
+    <string name="gmts_button_show_ad">Show Ad</string>
+    <string name="gmts_button_try_again">Try Again</string>
+    <string name="gmts_compatible_with_format_ads">Compatible with %1$s ads</string>
+    <string name="gmts_custom_event">Custom Event</string>
+    <string name="gmts_disclaimer_confirmation">"I've configured test ads and agree to the %1$s."</string>
+    <string name="gmts_disclaimer_link_text">disclaimer</string>
+    <string name="gmts_disclaimer_text">"When an account source fills ad requests but the ads don't receive any clicks, the ad source may suspect foul play, which can cause your account to be suspended. If you use test ads, however, the ad source understands that the ad requests are for testing only and you avoid the risk of account suspension."</string>
+    <string name="gmts_disclaimer_title">Use test ads to avoid the risk of account suspension</string>
+    <string name="gmts_error_internal_error">Internal error</string>
+    <string name="gmts_error_invalid_request">Invalid request</string>
+    <string name="gmts_error_missing_components_message">You need to fix some implementation errors before you can load an ad</string>
+    <string name="gmts_error_missing_components_title">"Can't load ad"</string>
+    <string name="gmts_error_network_error">Network error</string>
+    <string name="gmts_error_no_fill_message">Your ad source may not be set up correctly. Check your setup and system logs, then try again.</string>
+    <string name="gmts_error_no_fill_title">No fill from ad source</string>
+    <string name="gmts_error_unsupported_ad_load_format">"Unsupported format for ad loading, expected Banner or Interstitial, got '%s'"</string>
+    <string name="gmts_error_yield_partner_no_fill_message">Your yield partner may not be setup correctly. Check your setup and your system logs, then try again.</string>
+    <string name="gmts_error_yield_partner_no_fill_title">No fill from yield partner</string>
+    <string name="gmts_failing_ad_units">Failing Ad Units</string>
+    <string name="gmts_format">Format</string>
+    <string name="gmts_format_banner">Banner</string>
+    <string name="gmts_format_banner_interstitial">Banner,Interstitial</string>
+    <string name="gmts_format_interstitial">Interstitial</string>
+    <string name="gmts_format_native">Native</string>
+    <string name="gmts_format_rewarded">Rewarded</string>
+    <string name="gmts_found">Found</string>
+    <string name="gmts_info_label">Info</string>
+    <string name="gmts_link_text_learn_more">Learn more</string>
+    <string name="gmts_loading_ads_message">This could take up to 2 minutes based on the speed of your ad sources and your network connection.</string>
+    <string name="gmts_loading_ads_title">Loading ads</string>
+    <string name="gmts_log_text_app_id_missing">Google Mediation Test Suite not launching as the app ID is not provided in the app manifest. AdMob publishers should follow the instructions here: https://googlemobileadssdk.page.link/admob-android-update-manifest to add a valid App ID inside the AndroidManifest. Google Ad Manager publishers should follow instructions here: https://googlemobileadssdk.page.link/ad-manager-android-update-manifest.</string>
+    <string name="gmts_log_text_device_not_registered">"Google Mediation Test Suite not launching in non-debuggable build as the device is not registered as a test device. Add the device hash (found in the logs, logged by 'Ads') as a test device to MediationTestSuite to use the mediation test suite on this device in a non-debuggable build."</string>
+    <string name="gmts_manifest">Manifest</string>
+    <string name="gmts_mapped_ad_unit_details_title">Mapped Ad Unit Details</string>
+    <string name="gmts_mapped_ad_units">Mapped Ad Units</string>
+    <string name="gmts_native_advertiser">- advertiser \"%1$s\"</string>
+    <string name="gmts_native_body">- body \"%1$s\"</string>
+    <string name="gmts_native_contains_video_false">- does not contain video asset</string>
+    <string name="gmts_native_contains_video_true">- contains video asset</string>
+    <string name="gmts_native_cta">- call to action \"%1$s\"</string>
+    <string name="gmts_native_headline">- headline \"%1$s\"</string>
+    <string name="gmts_native_icon">- icon \"%1$s\"</string>
+    <string name="gmts_native_image">- main image \"%1$s\"</string>
+    <string name="gmts_native_price">- price \"%1$s\"</string>
+    <string name="gmts_native_star_rating">- star rating \"%1$f\"</string>
+    <string name="gmts_native_store">- store \"%1$s\"</string>
+    <string name="gmts_no_ad_units_found">No mediated ad units found.</string>
+    <string name="gmts_no_yield_groups_found">No yield groups found.</string>
+    <string name="gmts_no_yield_partners_found">No yield partners found.</string>
+    <string name="gmts_not_found">Not found</string>
+    <string name="gmts_not_tested_label">Untested</string>
+    <string name="gmts_not_tested_message">Make sure your ad unit is set up correctly by loading at least one ad. Use test ads instead of real ads to avoid policy violations.</string>
+    <string name="gmts_not_tested_title">"You haven't loaded an ad yet"</string>
+    <string name="gmts_num_ads_selected">%d selected</string>
+    <string name="gmts_open_bidding_load_error_inititialization_format">"Your adapter didn't initialize correctly. %1$s."</string>
+    <string name="gmts_open_bidding_load_error_test_device_format">You need to register this as a test device before loading ads from Open Bidding partners. %1$s.</string>
+    <string name="gmts_open_bidding_partner">Open Bidding Partner</string>
+    <string name="gmts_open_bidding_partner_format">%1$s - Open Bidding partner</string>
+    <string name="gmts_open_bidding_partners">Open Bidding Partners</string>
+    <string name="gmts_parameter_label">Parameter</string>
+    <string name="gmts_placeholder_search_ad_source">Search by ad source name</string>
+    <string name="gmts_placeholder_search_ad_units">Search by ad unit ID, ad source, or format</string>
+    <string name="gmts_placeholder_search_yield_groups">Search by ID, yield partner, or format</string>
+    <string name="gmts_placeholder_search_yield_partner">Search by yield partner name</string>
+    <string name="gmts_register_device_button">Register device</string>
+    <string name="gmts_register_device_detail">Register this device to see ad unit names instead of just ad unit IDs.</string>
+    <string name="gmts_register_device_dismiss">Dismiss</string>
+    <string name="gmts_register_device_title">Want to see ad unit names?</string>
+    <string name="gmts_retrieved_assets">Retrieved assets</string>
+    <string name="gmts_sdk">SDK</string>
+    <string name="gmts_search_title">Search</string>
+    <string name="gmts_section_ad_load">Ad Load</string>
+    <string name="gmts_section_ad_source_configuration">Ad Source Configuration</string>
+    <string name="gmts_section_ad_unit_info">Details</string>
+    <string name="gmts_section_configuration_errors">Configuration Errors</string>
+    <string name="gmts_section_implementation">Implementation</string>
+    <string name="gmts_section_mapped_ad_unit_info">Mapped Ad Unit Info</string>
+    <string name="gmts_section_missing_components">Missing Components</string>
+    <string name="gmts_section_open_bidding_ad_sources">Open Bidding Ad Sources</string>
+    <string name="gmts_section_open_bidding_yield_partners">Open Bidding Yield Partners</string>
+    <string name="gmts_section_waterfall_ad_sources">Waterfall Ad Sources</string>
+    <string name="gmts_section_waterfall_ad_yield_partners">Waterfall Yield Partners</string>
+    <string name="gmts_section_working">Working</string>
+    <string name="gmts_section_yield_group_info">Yield group details</string>
+    <string name="gmts_section_yield_partner_configuration">Configuration</string>
+    <string name="gmts_status_not_ready">Not Ready</string>
+    <string name="gmts_status_ready">Ready</string>
+    <string name="gmts_subtitle_open_bidding_ad_source">Open Bidding ad source</string>
+    <string name="gmts_subtitle_waterfall_ad_source">Waterfall ad source</string>
+    <string name="gmts_used_by">Used by</string>
+    <string name="gmts_version_string_format">%1$s: v %2$s</string>
+    <string name="gmts_working_ad_units">Working Ad Units</string>
+    <string name="gmts_yield_groupID">Group ID</string>
+    <string name="gmts_yield_group_details_title">Yield Group Details</string>
+    <string name="gmts_yield_group_format_label_format">%1$s yield group</string>
+    <string name="gmts_yield_groups">Yield Groups</string>
+    <string name="gmts_yield_partner_not_tested_message">Make sure this yield partner is set up correctly by loading at least one ad. Use test ads instead of real ads to avoid policy violations.</string>
+
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="home">Home</string>
+    <string name="icon_content_description">Dialog Icon</string>
+    <string name="item_view_role_description">Tab</string>
+    <string name="league">League</string>
+    <string name="league_name">League Name</string>
+    <string name="live">Live</string>
+    <string name="location_permission_missing_message">Looks like this app doesn\'t have location services configured. Please see OneSignal docs for more information.</string>
+    <string name="location_permission_missing_title">App Missing Permission</string>
+    <string name="location_permission_name_for_title">Location</string>
+    <string name="location_permission_settings_message">sharing your device location</string>
+    <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a, ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\10\10 Suspendisse interdum ornare ante. Aliquam nec cursus lorem. Morbi id magna felis. Vivamus egestas, est a condimentum egestas, turpis nisl iaculis ipsum, in dictum tellus dolor sed neque. Morbi tellus erat, dapibus ut sem a, iaculis tincidunt dui. Interdum et malesuada fames ac ante ipsum primis in faucibus. Curabitur et eros porttitor, ultricies urna vitae, molestie nibh. Phasellus at commodo eros, non aliquet metus. Sed maximus nisl nec dolor bibendum, vel congue leo egestas.\10\10 Sed interdum tortor nibh, in sagittis risus mollis quis. Curabitur mi odio, condimentum sit amet auctor at, mollis non turpis. Nullam pretium libero vestibulum, finibus orci vel, molestie quam. Fusce blandit tincidunt nulla, quis sollicitudin libero facilisis et. Integer interdum nunc ligula, et fermentum metus hendrerit id. Vestibulum lectus felis, dictum at lacinia sit amet, tristique id quam. Cras eu consequat dui. Suspendisse sodales nunc ligula, in lobortis sem porta sed. Integer id ultrices magna, in luctus elit. Sed a pellentesque est.\10\10 Aenean nunc velit, lacinia sed dolor sed, ultrices viverra nulla. Etiam a venenatis nibh. Morbi laoreet, tortor sed facilisis varius, nibh orci rhoncus nulla, id elementum leo dui non lorem. Nam mollis ipsum quis auctor varius. Quisque elementum eu libero sed commodo. In eros nisl, imperdiet vel imperdiet et, scelerisque a mauris. Pellentesque varius ex nunc, quis imperdiet eros placerat ac. Duis finibus orci et est auctor tincidunt. Sed non viverra ipsum. Nunc quis augue egestas, cursus lorem at, molestie sem. Morbi a consectetur ipsum, a placerat diam. Etiam vulputate dignissim convallis. Integer faucibus mauris sit amet finibus convallis.\10\10 Phasellus in aliquet mi. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In volutpat arcu ut felis sagittis, in finibus massa gravida. Pellentesque id tellus orci. Integer dictum, lorem sed efficitur ullamcorper, libero justo consectetur ipsum, in mollis nisl ex sed nisl. Donec maximus ullamcorper sodales. Praesent bibendum rhoncus tellus nec feugiat. In a ornare nulla. Donec rhoncus libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.</string>
+    <string name="losses">Losses</string>
+
+    <string name="matches">Matches</string>
+
+    <string name="more">More</string>
+
+    <string name="my_country_league">My Country League</string>
+    <string name="native_body">Body</string>
+    <string name="native_headline">Headline</string>
+    <string name="native_media_view">Media View</string>
+    <string name="nav_app_bar_navigate_up_description">Navigate up</string>
+    <string name="nav_app_bar_open_drawer_description">Open navigation drawer</string>
+    <string name="next">Next</string>
+    <string name="overall_rating">Overall Rating</string>
+    <string name="position">Position</string>
+    <string name="previous">Previous</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_policy_text"> Privacy Policy \nThis SERVICE is provided by Developer Xtra Media at no cost and is intended for use as is. This page is used to inform website visitors regarding our policies with the collection, use, and disclosure of Personal Information if anyone decided to use our Service. If you choose to use our Service, then you agree to the collection and use of information in relation to this policy. The Personal Information that we collect is used for providing and improving the Service. We will not use or share your information with anyone except as described in this Privacy Policy. The terms used in this Privacy Policy have the same meanings as in our Terms and Conditions, which is accessible at live football unless otherwise defined in this Privacy Policy. \n\nInformation Collection and Use\nFor a better experience, while using our Service, we may require you to provide us with certain personally identifiable information, including but not limited to INTRENET PERMISSION. The information that we request is will be retained by us and used as described in this privacy policy. The app does use third party services that may collect information used to identify you. Link to privacy policy of third party service providers used by the app \nGoogle Play Services \nAdMob \nFirebase Analytics \nLog Data We want to inform you that whenever you use our Service, in a case of an error in the app we collect data and information (through third party products) on your phone called Log Data. This Log Data may include information such as your device Internet Protocol (“IP”) address, device name, operating system version, the configuration of the app when utilizing our Service, the time and date of your use of the Service, and other statistics. \n\nCookies \nCookies are files with small amount of data that is commonly used an anonymous unique identifier. These are sent to your browser from the website that you visit and are stored on your device internal memory. This Service does not use these “cookies” explicitly. However, the app may use third party code and libraries that use “cookies” to collection information and to improve their services. You have the option to either accept or refuse these cookies and know when a cookie is being sent to your device. If you choose to refuse our cookies, you may not be able to use some portions of this Service. \n\nService Providers\nWe may employ third-party companies and individuals due to the following reasons: To facilitate our Service; To provide the Service on our behalf; To perform Service-related services; or To assist us in analyzing how our Service is used. We want to inform users of this Service that these third parties have access to your Personal Information. The reason is to perform the tasks assigned to them on our behalf. However, they are obligated not to disclose or use the information for any other purpose. \n\nSecurity\nWe value your trust in providing us your Personal Information, thus we are striving to use commercially acceptable means of protecting it. But remember that no method of transmission over the internet, or method of electronic storage is 100% secure and reliable, and we cannot guarantee its absolute security. \n\nLinks to Other Sites\nThis Service may contain links to other sites. If you click on a third-party link, you will be directed to that site. Note that these external sites are not operated by us. Therefore, we strongly advise you to review the Privacy Policy of these websites. We have no control over and assume no responsibility for the content, privacy policies, or practices of any third-party sites or services. \n\nChildren’s Privacy\nThese Services do not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13. In the case we discover that a child under 13 has provided us with personal information, we immediately delete this from our servers. If you are a parent or guardian and you are aware that your child has provided us with personal information, please contact us so that we will be able to do necessary actions. \n\nChanges to This Privacy Policy\nWe may update our Privacy Policy from time to time. Thus, you are advised to review this page periodically for any changes. We will notify you of any changes by posting the new Privacy Policy on this page. These changes are effective immediately after they are posted on this page. \n\nContact Us\nIf you have any question about this privacy policy, please do not hesitate to contact us on our developer gmail account. </string>
+    <string name="rate_me">Rate Me</string>
+    <string name="recent_matches">Recent Matches</string>
+    <string name="red_card">Red Card</string>
+    <string name="result">Result</string>
+
+    <string name="search_menu_title">Search</string>
+
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="see_all">See All</string>
+    <string name="see_more">See More</string>
+    <string name="share">Share</string>
+    <string name="shirt">Shirt</string>
+
+    <string name="team_possesion">Team Possesion</string>
+    <string name="title_activity_player_details">PlayerDetailsActivity</string>
+    <string name="watermark_label_prefix">AdMob - </string>
+    <string name="weekly_fixture">Weekly Fixture</string>
+    <string name="yellow_card">Yellow Card</string>
+
+</resources>

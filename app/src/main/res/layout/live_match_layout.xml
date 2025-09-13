@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView android:id="@id/LiveScoreId" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_margin="2.0dip" app:cardCornerRadius="10.0dip" app:cardElevation="10.0dip"
+    xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <RelativeLayout android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_margin="2.0dip">
+        <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/timeRL" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerVertical="true">
+            <ImageView android:id="@+id/imageView" android:layout_width="35.0dip" android:layout_height="35.0dip" android:src="@drawable/time_frame" android:layout_centerInParent="true" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="1.0" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" />
+            <TextView android:textSize="12.0sp" android:textColor="@color/active_color" android:id="@+id/liveTimeId" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="90'" android:layout_centerInParent="true" android:paddingStart="10.0dip" android:paddingEnd="10.0dip" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="@+id/imageView" app:layout_constraintHorizontal_bias="0.75" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintVertical_bias="0.65999997" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+        <LinearLayout android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginStart="15.0dip" android:layout_toEndOf="@+id/timeRL">
+            <RelativeLayout android:layout_width="fill_parent" android:layout_height="30.0dip" android:layout_weight="1.0">
+                <ImageView android:id="@+id/liveHomeFlagId" android:layout_width="30.0dip" android:layout_height="30.0dip" />
+                <TextView android:textSize="14.0sp" android:textColor="@color/black" android:id="@+id/liveHomeNameId" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3.0dip" android:layout_centerVertical="true" android:layout_marginStart="5.0dip" android:layout_toStartOf="@+id/homeGoalId" android:layout_toEndOf="@+id/liveHomeFlagId" />
+                <TextView android:textSize="14.0sp" android:textColor="@color/white" android:gravity="center" android:id="@+id/homeGoalId" android:background="@drawable/score" android:layout_width="20.0dip" android:layout_height="20.0dip" android:layout_centerVertical="true" android:layout_marginEnd="20.0dip" android:layout_alignParentEnd="true" />
+            </RelativeLayout>
+            <RelativeLayout android:layout_width="fill_parent" android:layout_height="30.0dip" android:layout_marginTop="5.0dip" android:layout_weight="1.0">
+                <ImageView android:id="@+id/liveAwayFlagId" android:layout_width="30.0dip" android:layout_height="30.0dip" />
+                <TextView android:textSize="14.0sp" android:textColor="@color/black" android:id="@+id/liveAwayNameId" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3.0dip" android:layout_centerVertical="true" android:layout_marginStart="5.0dip" android:layout_toStartOf="@+id/awayGoalId" android:layout_toEndOf="@+id/liveAwayFlagId" />
+                <TextView android:textSize="14.0sp" android:textColor="@color/white" android:gravity="center" android:id="@+id/awayGoalId" android:background="@drawable/score" android:layout_width="20.0dip" android:layout_height="20.0dip" android:layout_centerVertical="true" android:layout_marginEnd="20.0dip" android:layout_alignParentEnd="true" />
+            </RelativeLayout>
+        </LinearLayout>
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

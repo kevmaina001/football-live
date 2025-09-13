@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "377674574528",
+    "project_id": "live-football-f2d66",
+    "storage_bucket": "live-football-f2d66.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:377674574528:android:51637d3435116593509b25",
+        "android_client_info": {
+          "package_name": "com.tvfootballhd.liveandstream"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGSELGxi20kAzIh1JfoudEsPSjOJhVtaQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

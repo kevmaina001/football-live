@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="FirstFragment" />
+    <item type="id" name="LeagueScheduleActivityscoreId" />
+    <item type="id" name="LeagueScheduleActivitystatisticsAwayIconId" />
+    <item type="id" name="LeagueScheduleActivitystatisticsAwayNameId" />
+    <item type="id" name="LeagueScheduleActivitystatisticsGoalTvId" />
+    <item type="id" name="LeagueScheduleActivitystatisticsHomeIconId" />
+    <item type="id" name="LeagueScheduleActivitystatisticsHomeNameId" />
+    <item type="id" name="LeagueScheduleActivitystatisticsTimeTvId" />
+    <item type="id" name="LiveScoreId" />
+    <item type="id" name="SecondFragment" />
+    <item type="id" name="a105" />
+    <item type="id" name="a120" />
+    <item type="id" name="a15" />
+    <item type="id" name="a30" />
+    <item type="id" name="a45" />
+    <item type="id" name="a60" />
+    <item type="id" name="a75" />
+    <item type="id" name="a90" />
+    <item type="id" name="aboutUsIcon" />
+    <item type="id" name="aboutUsId" />
+</resources>

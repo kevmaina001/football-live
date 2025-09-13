@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:aapt="http://schemas.android.com/aapt">
+    <item android:icon="@drawable/home_icon" android:id="@+id/homeId" android:title="@string/home"/>
+    <item android:icon="@drawable/schedule" android:id="@+id/matches" android:title="@string/matches"/>
+    <item android:icon="@drawable/live_tv" android:id="@+id/liveTvId" android:title="@string/live"/>
+    <item android:icon="@drawable/trophy" android:id="@+id/leagueId" android:title="@string/league"/>
+    <item android:icon="@drawable/more" android:id="@+id/moreId" android:title="@string/more"/>
+</menu>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:aapt="http://schemas.android.com/aapt" android:layout_width="match_parent" android:layout_height="wrap_content">
+    <LinearLayout android:gravity="center" android:orientation="vertical" android:padding="15dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerHorizontal="true" android:layout_centerVertical="true">
+        <com.airbnb.lottie.LottieAnimationView android:layout_width="150dp" android:layout_height="150dp" app:lottie_autoPlay="true" app:lottie_loop="true" app:lottie_rawRes="@raw/no_internet"/>
+        <TextView android:textSize="25sp" android:textStyle="bold" android:textColor="#ff5722" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Oops!"/>
+        <TextView android:textSize="16sp" android:textStyle="bold" android:textColor="#73706f" android:gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="No Internet Connection\10Check Your Device Connected\10 With Internet"/>
+        <TextView android:textSize="18sp" android:textStyle="bold" android:textColor="@color/white" android:gravity="center" android:layout_gravity="center" android:id="@+id/retry" android:background="@drawable/button_orange" android:layout_width="180dp" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="Try Again"/>
+    </LinearLayout>
+</RelativeLayout>

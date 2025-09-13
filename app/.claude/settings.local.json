@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(java:*)",
+      "Bash(./gradlew:*)",
+      "Read(//c/Users/user/Desktop/projects/Football Live Score (Topon)/Live Football/**)",
+      "Read(//c/Users/user/Desktop/projects/Football Live Score (Topon)/Live Football/gradle/wrapper/**)",
+      "Bash(export:*)",
+      "Bash(export ANDROID_HOME=\"C:/Users/user/AppData/Local/Android/Sdk\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

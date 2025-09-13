@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="gmts_ad_load_image_padding_sides">12.0dip</dimen>
+    <dimen name="gmts_ad_load_image_padding_top_bottom">8.0dip</dimen>
+    <dimen name="gmts_caption_corner_radius">20.0dip</dimen>
+    <dimen name="gmts_caption_padding_end">12.0dip</dimen>
+    <dimen name="gmts_caption_padding_outer">5.0dip</dimen>
+    <dimen name="gmts_card_corner_radius">0.0dip</dimen>
+    <dimen name="gmts_card_elevation">0.25dip</dimen>
+    <dimen name="gmts_card_padding">0.0dip</dimen>
+    <dimen name="gmts_padding_content_default">6.0dip</dimen>
+    <dimen name="gmts_padding_content_large">14.0dip</dimen>
+    <dimen name="gmts_padding_content_medium">4.0dip</dimen>
+    <dimen name="gmts_padding_content_small">2.0dip</dimen>
+    <dimen name="gmts_padding_outer_bottom">12.0dip</dimen>
+    <dimen name="gmts_padding_outer_default">16.0dip</dimen>
+    <dimen name="gmts_padding_outer_large">24.0dip</dimen>
+    <dimen name="gmts_padding_outer_medium">10.0dip</dimen>
+    <dimen name="gmts_padding_outer_small">8.0dip</dimen>
+    <dimen name="gmts_register_detail_top_padding">9.0dip</dimen>
+    <dimen name="gmts_register_image_padding">9.0dip</dimen>
+    <dimen name="gmts_register_image_size">40.0dip</dimen>
+    <dimen name="gmts_text_margin_horiz">16.0dip</dimen>
+    <dimen name="gmts_text_margin_vert">8.0dip</dimen>
+
+
+</resources>

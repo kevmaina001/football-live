@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:aapt="http://schemas.android.com/aapt" android:background="@drawable/top_round_corner_white" android:layout_width="match_parent" android:layout_height="match_parent">
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:orientation="vertical" android:id="@+id/mainLL" android:visibility="visible" android:layout_width="match_parent" android:layout_height="match_parent">
+            <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
+                <TextView android:textSize="16sp" android:textStyle="bold" android:textColor="@color/black" android:layout_gravity="center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:layout_marginBottom="5dp" android:text="@string/team_possesion"/>
+                <LinearLayout android:gravity="center" android:layout_gravity="center" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView android:textSize="30sp" android:textColor="@color/black" android:id="@+id/homePossessId" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="10dp"/>
+                    <com.google.android.material.progressindicator.CircularProgressIndicator android:id="@+id/possesId" android:layout_width="wrap_content" android:layout_height="wrap_content" android:indeterminate="false" android:layout_marginStart="10.0dip" app:indicatorColor="@color/blue" app:indicatorDirectionCircular="counterclockwise" app:indicatorSize="80.0dip" app:trackColor="@color/blue2" app:trackCornerRadius="2.0dip" app:trackThickness="15.0dip" />
+                    <TextView android:textSize="30sp" android:textColor="@color/black" android:id="@+id/awayPossessId" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="10dp"/>
+                </LinearLayout>
+            </LinearLayout>
+            <androidx.recyclerview.widget.RecyclerView android:id="@+id/statisticsRecyclerView" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"/>
+        </LinearLayout>
+        <include android:orientation="vertical" android:id="@+id/nothingFoundLL" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent" layout="@layout/nothing_found"/>
+        <com.airbnb.lottie.LottieAnimationView android:id="@+id/lottiId" android:visibility="gone" android:layout_width="250dp" android:layout_height="200dp" android:layout_centerInParent="true" app:lottie_autoPlay="true" app:lottie_loop="true" app:lottie_rawRes="@raw/loading"/>
+    </RelativeLayout>
+</FrameLayout>

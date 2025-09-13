@@ -1,0 +1,194 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.LiveFootball" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    </style>
+
+    <style name="Theme.LiveFootball" parent="Base.Theme.LiveFootball" />
+    <style name="LaunchTheme" parent="@style/Theme.FootballScore">
+        <item name="android:windowBackground">@drawable/launcher</item>
+    </style>
+    <style name="Theme.FootballScore" parent="@style/Base.Theme.FootballScore" />
+    <style name="Theme.IAPTheme" parent="@android:style/Theme">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+    <style name="Base.Theme.FootballScore" parent="@style/Theme.Material3.DayNight.NoActionBar">
+        <item name="android:fontFamily">@font/mainfont</item>
+        <item name="android:statusBarColor">@color/main_color</item>
+        <item name="colorSecondary">@color/active_color</item>
+        <item name="fontFamily">@font/mainfont</item>
+    </style>
+    <style name="gmts_AppSecondaryTheme.Toolbar" parent="@style/gmts_AppSecondaryTheme.NoActionBar">
+        <item name="actionMenuTextColor">@color/gmts_blue</item>
+    </style>
+    <style name="gmts_AppSecondaryTheme.NoActionBar" parent="@style/gmts_AppSecondaryTheme">
+        <item name="toolbarNavigationButtonStyle">@style/gmts_Toolbar.Button.Navigation.Tinted</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+    <style name="gmts_AppSecondaryTheme.PopupOverlay" parent="@style/ThemeOverlay.AppCompat.Light">
+        <item name="android:textColor">@color/gmts_blue</item>
+    </style>
+    <style name="gmts_AppSecondaryTheme" parent="@style/Theme.AppCompat.Light">
+        <item name="android:actionMenuTextColor">@color/gmts_blue</item>
+        <item name="buttonStyle">@style/Widget.AppCompat.Button.Borderless</item>
+        <item name="colorAccent">@color/gmts_dark_text_primary</item>
+        <item name="colorControlNormal">@color/gmts_dark_text_primary</item>
+        <item name="colorPrimary">@color/gmts_light_text</item>
+        <item name="colorPrimaryDark">@color/gmts_light_gray</item>
+        <item name="dialogTheme">@style/gmts_DialogTheme</item>
+    </style>
+    <style name="gmts_Toolbar.Button.Navigation.Tinted" parent="@style/Widget.AppCompat.Toolbar.Button.Navigation">
+        <item name="tint">@color/gmts_dark_text_primary</item>
+    </style>
+    <style name="gmts_DialogTheme" parent="@style/Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:textColorPrimary">@color/gmts_dark_text_primary</item>
+        <item name="android:windowBackground">@drawable/gmts_dialog_background</item>
+        <item name="android:windowTitleStyle">@style/gmts_FontHeadline1</item>
+        <item name="buttonBarButtonStyle">@style/gmts_ButtonPadded</item>
+        <item name="buttonBarNegativeButtonStyle">@style/gmts_ButtonPadded</item>
+        <item name="buttonBarPositiveButtonStyle">@style/gmts_BlueButton</item>
+        <item name="colorAccent">@color/gmts_blue</item>
+        <item name="colorControlActivated">@color/gmts_blue</item>
+        <item name="colorControlNormal">@color/gmts_dark_text_primary</item>
+    </style>
+    <style name="gmts_FontHeadline1">
+        <item name="android:textSize">20.0sp</item>
+        <item name="android:textColor">@color/gmts_dark_text_primary</item>
+        <item name="android:lineSpacingExtra">4.0dip</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="gmts_ButtonPadded" parent="@style/Widget.AppCompat.Button.Borderless.Colored">
+        <item name="android:textAppearance">@style/gmts_FontButton</item>
+        <item name="android:layout_marginBottom">@dimen/gmts_padding_outer_small</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+    <style name="gmts_BlueButton" parent="@style/Widget.AppCompat.Button.Borderless">
+        <item name="android:textAppearance">@style/gmts_FontButtonWhite</item>
+        <item name="android:textColor">@drawable/gmts_button_text_selector</item>
+        <item name="android:background">@drawable/gmts_button_bg_blue</item>
+        <item name="android:paddingLeft">@dimen/gmts_padding_outer_small</item>
+        <item name="android:paddingRight">@dimen/gmts_padding_outer_small</item>
+        <item name="android:layout_marginBottom">@dimen/gmts_padding_outer_small</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+    <style name="gmts_FontButton">
+        <item name="android:textSize">13.0sp</item>
+        <item name="android:textColor">@color/gmts_blue</item>
+        <item name="android:lineSpacingExtra">1.0dip</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    <style name="gmts_FontButtonWhite">
+        <item name="android:textSize">13.0sp</item>
+        <item name="android:textColor">@color/gmts_light_text</item>
+        <item name="android:lineSpacingExtra">1.0dip</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:backgroundTint">@color/gmts_blue</item>
+    </style>
+    <style name="gmts_AppTheme.AppBarOverlay" parent="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="gmts_AppTheme.PopupOverlay" parent="@style/ThemeOverlay.AppCompat.Light" />
+    <style name="gmts_FontHeadline3">
+        <item name="android:textSize">13.0sp</item>
+        <item name="android:textColor">@color/gmts_light_text</item>
+        <item name="android:lineSpacingExtra">3.0dip</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    <style name="gmts_FontBody1">
+        <item name="android:textSize">13.0sp</item>
+        <item name="android:textColor">@color/gmts_dark_text_primary</item>
+        <item name="android:lineSpacingExtra">3.0dip</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="gmts_FontBody2">
+        <item name="android:textSize">14.0sp</item>
+        <item name="android:textColor">@color/gmts_dark_gray</item>
+        <item name="android:lineSpacingExtra">2.0dip</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    <style name="gmts_FontBody3">
+        <item name="android:textSize">13.0sp</item>
+        <item name="android:textColor">@color/gmts_dark_text_secondary</item>
+        <item name="android:lineSpacingExtra">1.0dip</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="gmts_TintedCheckBox" parent="@style/Theme.AppCompat.Light">
+        <item name="colorControlActivated">@color/gmts_blue</item>
+        <item name="colorControlNormal">@color/gmts_dark_text_primary</item>
+    </style>
+    <style name="gmts_FontHeadline6">
+        <item name="android:textSize">13.0sp</item>
+        <item name="android:textColor">@color/gmts_dark_gray</item>
+        <item name="android:lineSpacingExtra">3.0dip</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="gmts_FontHeadline7">
+        <item name="android:textSize">13.0sp</item>
+        <item name="android:textColor">@color/gmts_native_assets</item>
+        <item name="android:lineSpacingExtra">3.0dip</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="gmts_CardView.Padding" parent="@style/CardView">
+        <item name="cardCornerRadius">@dimen/gmts_card_corner_radius</item>
+        <item name="cardElevation">@dimen/gmts_card_elevation</item>
+        <item name="cardMaxElevation">@dimen/gmts_card_elevation</item>
+        <item name="cardUseCompatPadding">true</item>
+    </style>
+    <style name="gmts_TextMarginsStandard">
+        <item name="android:layout_marginLeft">@dimen/gmts_text_margin_horiz</item>
+        <item name="android:layout_marginTop">@dimen/gmts_text_margin_vert</item>
+        <item name="android:layout_marginRight">@dimen/gmts_text_margin_horiz</item>
+        <item name="android:layout_marginBottom">@dimen/gmts_text_margin_vert</item>
+    </style>
+    <style name="gmts_FontHeadline2">
+        <item name="android:textSize">16.0sp</item>
+        <item name="android:textColor">@color/gmts_dark_gray</item>
+        <item name="android:lineSpacingExtra">4.0dip</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    <style name="gmts_FontHeadline4">
+        <item name="android:textSize">14.0sp</item>
+        <item name="android:textColor">@color/gmts_light_gray</item>
+        <item name="android:lineSpacingExtra">2.0dip</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="gmts_FontSearchBar">
+        <item name="android:textSize">20.0sp</item>
+        <item name="android:textColor">@color/gmts_dark_text_primary</item>
+        <item name="android:lineSpacingExtra">0.0dip</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="gmts_FontCaption1">
+        <item name="android:textSize">12.0sp</item>
+        <item name="android:textColor">@color/gmts_dark_text_primary</item>
+        <item name="android:lineSpacingExtra">4.0dip</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="gmts_FontNativeAssetsHeadline">
+        <item name="android:textSize">13.0dip</item>
+        <item name="android:textColor">@color/gmts_native_assets</item>
+        <item name="android:lineSpacingExtra">1.0dip</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="gmts_FontNativeAssets">
+        <item name="android:textSize">12.0dip</item>
+        <item name="android:textColor">@color/gmts_native_assets</item>
+        <item name="android:lineSpacingExtra">1.0dip</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+    <style name="gmts_FontHeadline5">
+        <item name="android:textSize">11.0sp</item>
+        <item name="android:textColor">@color/gmts_dark_text_primary</item>
+        <item name="android:lineSpacingExtra">1.0dip</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:letterSpacing">0.073</item>
+    </style>
+
+</resources>
