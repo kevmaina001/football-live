@@ -1,95 +1,137 @@
 plugins {
     id 'com.android.application'
-    id 'com.onesignal.androidsdk.onesignal-gradle-plugin'
-    id 'com.google.gms.google-services'
-
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
+    id 'kotlin-parcelize'
 }
 
 android {
-    namespace 'com.tvfootballhd.liveandstream'
-    compileSdk 34
+    namespace 'com.kickscore.live'
+    compileSdk 35
 
     defaultConfig {
-        applicationId "com.tvfootballhd.liveandstream"
-        minSdk 21
-        targetSdk 34
-        versionCode 100
-        versionName "100.0"
-
-
+        applicationId "com.kickscore.live"
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName "1.0.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        vectorDrawables {
+            useSupportLibrary true
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-DEBUG"
+        }
     }
+
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.8'
+    }
+
+    packaging {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
     }
 }
 
 dependencies {
+    // Kotlin & Core
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
 
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.databinding:viewbinding:8.5.0'
-    implementation 'com.google.firebase:firebase-firestore:25.1.0'
+    // Compose BOM
+    implementation platform('androidx.compose:compose-bom:2024.02.00')
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-graphics'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.activity:activity-compose:1.8.2'
+    implementation 'androidx.navigation:navigation-compose:2.7.6'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0'
+    implementation 'androidx.compose.runtime:runtime-livedata'
+
+    // Hilt DI
+    implementation "com.google.dagger:hilt-android:2.49"
+    implementation 'androidx.hilt:hilt-navigation-compose:1.1.0'
+    kapt "com.google.dagger:hilt-android-compiler:2.49"
+
+    // Network
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
+
+    // Database
+    implementation "androidx.room:room-runtime:2.6.1"
+    implementation "androidx.room:room-ktx:2.6.1"
+    implementation "androidx.room:room-paging:2.6.1"
+    kapt "androidx.room:room-compiler:2.6.1"
+
+    // Paging
+    implementation "androidx.paging:paging-runtime-ktx:3.2.1"
+    implementation "androidx.paging:paging-compose:3.2.1"
+
+    // Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+
+    // Image Loading
+    implementation "io.coil-kt:coil-compose:2.5.0"
+
+    // WebSocket
+    implementation 'com.squareup.okhttp3:okhttp-ws:4.12.0'
+
+    // Permissions
+    implementation "com.google.accompanist:accompanist-permissions:0.32.0"
+
+    // Splash Screen
+    implementation 'androidx.core:core-splashscreen:1.0.1'
+
+    // Testing
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
+    testImplementation 'app.cash.turbine:turbine:1.0.0'
+    testImplementation 'io.mockk:mockk:1.13.8'
+    testImplementation 'androidx.arch.core:core-testing:2.2.0'
+
+    // Android Testing
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation platform('androidx.compose:compose-bom:2024.02.00')
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+    androidTestImplementation 'androidx.navigation:navigation-testing:2.7.6'
+    androidTestImplementation 'com.google.dagger:hilt-android-testing:2.49'
+    kaptAndroidTest 'com.google.dagger:hilt-android-compiler:2.49'
 
-    implementation 'com.google.android.gms:play-services-ads:23.1.0'
-    implementation 'com.facebook.android:audience-network-sdk:6.17.0'
-    implementation("com.google.ads.mediation:facebook:6.17.0.0")
-    implementation 'com.startapp:inapp-sdk:5.0.1'
-
-    implementation 'com.android.volley:volley:1.2.1'
-    implementation 'com.google.android.exoplayer:exoplayer-ui:2.14.1'
-    implementation 'com.google.android.exoplayer:extension-mediasession:2.14.1'
-    implementation 'com.google.android.exoplayer:exoplayer-hls:2.14.1'
-    implementation 'com.google.android.exoplayer:exoplayer-dash:2.14.1'
-    implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.14.1'
-    implementation 'com.google.android.exoplayer:exoplayer:2.14.1'
-
-
-
-
-    implementation 'com.onesignal:OneSignal:[4.0.0, 4.99.99]'
-
-
-    implementation 'com.airbnb.android:lottie:6.0.0'
-    implementation 'com.github.smarteist:Android-Image-Slider:1.4.0'
-    implementation 'me.relex:circleindicator:2.1.6'
-    implementation 'com.google.android.flexbox:flexbox:3.0.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
-    implementation 'com.squareup.picasso:picasso:2.8'
-
-    //Anythink (Necessary)
-    api "com.anythink.sdk:core-tpn:6.4.38"
-    api "com.anythink.sdk:nativead-tpn:6.4.38"
-    api "com.anythink.sdk:banner-tpn:6.4.38"
-    api "com.anythink.sdk:interstitial-tpn:6.4.38"
-    api "com.anythink.sdk:rewardedvideo-tpn:6.4.38"
-    api "com.anythink.sdk:splash-tpn:6.4.38"
-
-    //Androidx (Necessary)
-    api "androidx.appcompat:appcompat:1.1.0"
-    api "androidx.browser:browser:1.4.0"
-
-    //Facebook
-    api "com.anythink.sdk:adapter-tpn-facebook:6.4.38"
-    api "com.facebook.android:audience-network-sdk:6.18.0"
-    api "androidx.annotation:annotation:1.0.0"
-
-//Tramini
-    api "com.anythink.sdk:tramini-plugin-tpn:6.4.38"
-
-    implementation 'com.anythink.sdk:debugger-ui:1.1.0'
+    // Debug
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
 }
 
