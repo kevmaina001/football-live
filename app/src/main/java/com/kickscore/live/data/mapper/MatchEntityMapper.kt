@@ -77,6 +77,51 @@ object MatchEntityMapper {
         return entities.map { mapEntityToDomain(it) }
     }
 
+    fun mapDomainToEntity(match: Match): MatchEntity {
+        return MatchEntity(
+            id = match.id,
+            homeTeamId = match.homeTeam.id,
+            homeTeamName = match.homeTeam.name,
+            homeTeamLogo = match.homeTeam.logo,
+            awayTeamId = match.awayTeam.id,
+            awayTeamName = match.awayTeam.name,
+            awayTeamLogo = match.awayTeam.logo,
+            leagueId = match.league.id,
+            leagueName = match.league.name,
+            leagueLogo = match.league.logo,
+            leagueCountry = match.league.country,
+            season = match.league.season,
+            round = match.league.round,
+            matchDateTime = match.fixture.dateTime,
+            timezone = match.fixture.timezone,
+            timestamp = match.fixture.timestamp,
+            status = match.status.short,
+            statusLong = match.status.long,
+            elapsed = match.status.elapsed,
+            isLive = match.status.isLive,
+            homeScore = match.score.home,
+            awayScore = match.score.away,
+            halftimeHome = match.score.halftime?.home,
+            halftimeAway = match.score.halftime?.away,
+            fulltimeHome = match.score.fulltime?.home,
+            fulltimeAway = match.score.fulltime?.away,
+            venueId = match.venue?.id,
+            venueName = match.venue?.name,
+            venueCity = match.venue?.city,
+            referee = match.referee,
+            winner = null, // Will be calculated based on scores
+            isFavorite = match.isFavorite,
+            lastUpdated = match.lastUpdated,
+            hasEvents = false,
+            hasLineups = false,
+            hasStatistics = false
+        )
+    }
+
+    fun mapDomainToEntities(matches: List<Match>): List<MatchEntity> {
+        return matches.map { mapDomainToEntity(it) }
+    }
+
     private fun isMatchFinished(status: String): Boolean {
         return status.uppercase() in listOf("FT", "AET", "PEN", "FT_PEN", "CANC", "ABD", "PST")
     }

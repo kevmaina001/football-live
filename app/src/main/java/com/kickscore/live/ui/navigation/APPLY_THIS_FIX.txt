@@ -1,0 +1,42 @@
+✅ APPLY THIS NAVIGATION FIX FOR OPTION A (COMPETITIONS VIEW WITH DATE FILTERING)
+
+In KickScoreNavigation.kt, make these 2 simple changes:
+
+1. ADD THIS IMPORT (around line 24-25):
+   import com.kickscore.live.ui.screen.FixedCompetitionsScreen
+
+2. REPLACE LINES 50-59:
+   From:
+        composable(Screen.Matches.route) {
+            CompetitionsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToCompetition = { competitionId ->
+                    navController.navigate(Screen.CompetitionMatches.createRoute(competitionId))
+                }
+            )
+        }
+
+   To:
+        composable(Screen.Matches.route) {
+            FixedCompetitionsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToCompetition = { competitionId ->
+                    navController.navigate(Screen.CompetitionMatches.createRoute(competitionId))
+                }
+            )
+        }
+
+That's it! After this change:
+
+✅ Matches tab will show competitions with working date filters
+✅ Date selection will actually filter competitions by date
+✅ Competition counts will update dynamically
+✅ Clicking a competition will navigate to CompetitionMatchesScreen as before
+✅ Full debug logging will show what's happening
+
+The navigation flow remains:
+Matches Tab → FixedCompetitionsScreen (with date filtering) → CompetitionMatchesScreen → MatchDetailScreen

@@ -23,7 +23,6 @@ dependencyResolutionManagement {
         }
         google()
         mavenCentral()
-        maven { url 'https://google.bintray.com/exoplayer/' }
 
         maven { url "https://jitpack.io" }
         maven {

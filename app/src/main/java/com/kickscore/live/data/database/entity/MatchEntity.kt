@@ -5,6 +5,7 @@
 
 package com.kickscore.live.data.database.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
@@ -192,6 +193,7 @@ data class StandingEntity(
     val rank: Int,
     val points: Int,
     val goalsDiff: Int,
+    @ColumnInfo(name = "group_name")
     val group: String?,
     val form: String?,
     val status: String?,

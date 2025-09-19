@@ -8,6 +8,7 @@ package com.kickscore.live.di
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.kickscore.live.data.api.FootballApiService
+import com.kickscore.live.util.Config
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -40,8 +41,8 @@ object NetworkModule {
         return Interceptor { chain ->
             val original = chain.request()
             val request = original.newBuilder()
-                .header("X-RapidAPI-Key", "YOUR_API_KEY_HERE") // Replace with actual API key
-                .header("X-RapidAPI-Host", "api-football-v1.p.rapidapi.com")
+                .header("X-RapidAPI-Key", Config.API_KEY)
+                .header("X-RapidAPI-Host", Config.RAPIDAPI_HOST)
                 .build()
             chain.proceed(request)
         }

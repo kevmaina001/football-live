@@ -12,16 +12,16 @@ data class ApiResponse<T>(
     val get: String,
 
     @SerializedName("parameters")
-    val parameters: Map<String, String>,
+    val parameters: Map<String, String>? = null,
 
     @SerializedName("errors")
-    val errors: List<String>,
+    val errors: List<String>? = null,
 
     @SerializedName("results")
     val results: Int,
 
     @SerializedName("paging")
-    val paging: PagingDto,
+    val paging: PagingDto? = null,
 
     @SerializedName("response")
     val response: T

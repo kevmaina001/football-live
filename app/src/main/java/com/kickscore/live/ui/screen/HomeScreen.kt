@@ -5,47 +5,31 @@
 
 package com.kickscore.live.ui.screen
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kickscore.live.domain.model.Match
-import com.kickscore.live.ui.components.MatchCard
-import com.kickscore.live.ui.components.LoadingState
-import com.kickscore.live.ui.components.ErrorState
-import com.kickscore.live.ui.components.EmptyState
-import com.kickscore.live.ui.design.components.LeagueChip
-import com.kickscore.live.ui.design.tokens.Spacing
+import com.kickscore.live.domain.model.getTimeDisplay
+import com.kickscore.live.domain.model.isLive
 import com.kickscore.live.ui.state.HomeScreenAction
 import com.kickscore.live.ui.state.HomeScreenEffect
 import com.kickscore.live.ui.state.UiState
 import com.kickscore.live.ui.viewmodel.HomeViewModel
+import com.kickscore.live.ui.components.TeamLogo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +38,6 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val pullToRefreshState = rememberPullToRefreshState()
 
     // Handle effects
     LaunchedEffect(viewModel.effects) {
@@ -73,193 +56,345 @@ fun HomeScreen(
         }
     }
 
-    // Handle pull to refresh
-    if (pullToRefreshState.isRefreshing) {
-        LaunchedEffect(true) {
-            viewModel.handleAction(HomeScreenAction.RefreshData)
-            pullToRefreshState.endRefresh()
-        }
-    }
-
-    Box(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .nestedScroll(pullToRefreshState.nestedScrollConnection)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(vertical = Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.lg)
-        ) {
-            // Header
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = Spacing.Screen.horizontal),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "⚽ KickScore Football",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                IconButton(
+                    onClick = { viewModel.handleAction(HomeScreenAction.RefreshData) }
                 ) {
-                    Text(
-                        text = "KickScore Live",
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontWeight = FontWeight.Bold
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Refresh"
                     )
-
-                    IconButton(
-                        onClick = {
-                            viewModel.handleAction(HomeScreenAction.RefreshData)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Refresh",
-                            tint = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
                 }
-            }
-
-            // Featured Leagues
-            item {
-                Column {
-                    Text(
-                        text = "Featured Leagues",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.padding(horizontal = Spacing.Screen.horizontal)
-                    )
-
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = Spacing.Screen.horizontal),
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                        modifier = Modifier.padding(top = Spacing.md)
-                    ) {
-                        items(getFeaturedLeagues()) { league ->
-                            LeagueChip(
-                                name = league,
-                                isSelected = state.selectedLeague?.name == league,
-                                onClick = {
-                                    // TODO: Handle league selection
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Live Matches Section
-            item {
-                MatchSection(
-                    title = "Live Matches",
-                    matches = state.liveMatches,
-                    onMatchClick = { match ->
-                        viewModel.handleAction(HomeScreenAction.NavigateToMatch(match.id))
-                    },
-                    onSubscribeToLive = { match ->
-                        viewModel.handleAction(HomeScreenAction.SubscribeToLiveMatch(match.id))
-                    },
-                    emptyMessage = "No live matches at the moment"
-                )
-            }
-
-            // Today's Matches Section
-            item {
-                MatchSection(
-                    title = "Today's Matches",
-                    matches = state.todayMatches,
-                    onMatchClick = { match ->
-                        viewModel.handleAction(HomeScreenAction.NavigateToMatch(match.id))
-                    },
-                    onSubscribeToLive = { match ->
-                        viewModel.handleAction(HomeScreenAction.SubscribeToLiveMatch(match.id))
-                    },
-                    emptyMessage = "No matches scheduled for today"
-                )
             }
         }
 
-        PullToRefreshContainer(
-            modifier = Modifier.align(Alignment.TopCenter),
-            state = pullToRefreshState,
-        )
+        // Live matches section
+        when (val liveMatchesState = state.liveMatches) {
+            is UiState.Loading -> {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
+            is UiState.Success -> {
+                val liveMatches = liveMatchesState.data
+                if (liveMatches.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "🔴 Live Matches",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFE53E3E)
+                        )
+                    }
+
+                    items(liveMatches) { match ->
+                        RealMatchCard(
+                            match = match,
+                            onClick = { onNavigateToMatchDetail(match.id) }
+                        )
+                    }
+                } else {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "No live matches at the moment",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            is UiState.Error -> {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "⚠️ Error loading live matches",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text(
+                                text = liveMatchesState.message ?: "Unknown error",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = { viewModel.handleAction(HomeScreenAction.RefreshData) }
+                            ) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Today's matches section
+        item {
+            Text(
+                text = "📅 Today's Matches",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+
+        when (val todayMatchesState = state.todayMatches) {
+            is UiState.Loading -> {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
+            is UiState.Success -> {
+                val todayMatches = todayMatchesState.data
+                if (todayMatches.isNotEmpty()) {
+                    items(todayMatches) { match ->
+                        RealMatchCard(
+                            match = match,
+                            onClick = { onNavigateToMatchDetail(match.id) }
+                        )
+                    }
+                } else {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "No matches scheduled for today",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            is UiState.Error -> {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "⚠️ Error loading today's matches",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text(
+                                text = todayMatchesState.message ?: "Unknown error",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = { viewModel.handleAction(HomeScreenAction.RefreshData) }
+                            ) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun MatchSection(
-    title: String,
-    matches: UiState<List<Match>>,
-    onMatchClick: (Match) -> Unit,
-    onSubscribeToLive: (Match) -> Unit,
-    emptyMessage: String,
-    modifier: Modifier = Modifier
+fun RealMatchCard(
+    match: Match,
+    onClick: () -> Unit
 ) {
-    Column(modifier = modifier) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(horizontal = Spacing.Screen.horizontal)
-        )
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // League and date
+            Text(
+                text = match.league.name,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Medium
+            )
 
-        when (matches) {
-            is UiState.Loading -> {
-                LoadingState(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(Spacing.xl)
-                )
-            }
+            Spacer(modifier = Modifier.height(8.dp))
 
-            is UiState.Success -> {
-                if (matches.data.isEmpty()) {
-                    EmptyState(
-                        message = emptyMessage,
+            // Status and time
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (match.isLive()) {
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(Spacing.xl)
-                    )
-                } else {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = Spacing.Screen.horizontal),
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                        modifier = Modifier.padding(top = Spacing.md)
-                    ) {
-                        items(matches.data) { match ->
-                            MatchCard(
-                                match = match,
-                                onClick = { onMatchClick(match) },
-                                onLiveClick = { onSubscribeToLive(match) },
-                                modifier = Modifier.fillParentMaxWidth(0.85f)
+                            .background(
+                                Color(0xFFE53E3E),
+                                RoundedCornerShape(4.dp)
                             )
-                        }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "LIVE",
+                            color = Color.White,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant,
+                                RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = match.status.short,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
+
+                Text(
+                    text = match.getTimeDisplay(),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium
+                )
             }
 
-            is UiState.Error -> {
-                ErrorState(
-                    message = matches.message,
-                    onRetry = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(Spacing.xl)
-                )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Match details
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Home team with logo
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    TeamLogo(
+                        logoUrl = match.homeTeam.logo,
+                        teamName = match.homeTeam.name,
+                        size = 24.dp
+                    )
+                    Text(
+                        text = match.homeTeam.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                // Score
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = match.score?.home?.toString() ?: "-",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = ":",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = match.score?.away?.toString() ?: "-",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Away team with logo
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = match.awayTeam.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.End
+                    )
+                    TeamLogo(
+                        logoUrl = match.awayTeam.logo,
+                        teamName = match.awayTeam.name,
+                        size = 24.dp
+                    )
+                }
             }
         }
     }
-}
-
-private fun getFeaturedLeagues(): List<String> {
-    return listOf(
-        "Premier League",
-        "Champions League",
-        "La Liga",
-        "Serie A",
-        "Bundesliga",
-        "Ligue 1",
-        "Europa League"
-    )
 }

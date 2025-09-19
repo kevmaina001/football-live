@@ -7,6 +7,7 @@ package com.kickscore.live.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kickscore.live.domain.model.getScoreDisplay
 import com.kickscore.live.domain.usecase.GetMatchDetailsUseCase
 import com.kickscore.live.domain.util.Resource
 import com.kickscore.live.ui.state.MatchDetailAction
@@ -14,6 +15,7 @@ import com.kickscore.live.ui.state.MatchDetailEffect
 import com.kickscore.live.ui.state.MatchDetailState
 import com.kickscore.live.ui.state.MatchDetailTab
 import com.kickscore.live.ui.state.UiState
+import com.kickscore.live.util.dataOrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

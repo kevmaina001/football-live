@@ -37,6 +37,8 @@ import com.kickscore.live.ui.design.components.ScoreChip
 import com.kickscore.live.ui.design.components.TeamRow
 import com.kickscore.live.ui.design.theme.KickScoreTheme
 import com.kickscore.live.ui.design.tokens.KickScoreTypography
+import com.kickscore.live.util.getTimeDisplay
+import com.kickscore.live.util.hasScore
 import com.kickscore.live.ui.design.tokens.Spacing
 import java.time.LocalDateTime
 

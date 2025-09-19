@@ -35,8 +35,8 @@
             android:name="com.tvfootballhd.liveandstream.Activity.RecentMatchDetailsActivity"/>
         <activity
             android:exported="true"
-            android:name="com.tvfootballhd.liveandstream.Activity.SplashActivity"
-            android:theme="@style/LaunchTheme">
+            android:name="com.kickscore.live.MainActivity"
+            android:theme="@style/Theme.FootballScore">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -66,9 +66,6 @@
         <activity
             android:exported="false"
             android:name="com.tvfootballhd.liveandstream.Activity.WeeklyFixtureActivity"/>
-        <activity
-            android:exported="true"
-            android:name="com.kickscore.live.MainActivity"/>
         <meta-data
 
             android:name="com.google.android.gms.ads.APPLICATION_ID"

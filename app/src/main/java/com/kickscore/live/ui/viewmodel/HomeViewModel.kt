@@ -7,6 +7,7 @@ package com.kickscore.live.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kickscore.live.domain.model.Match
 import com.kickscore.live.domain.usecase.GetLiveMatchesUseCase
 import com.kickscore.live.domain.usecase.GetTodayMatchesUseCase
 import com.kickscore.live.domain.util.Resource
@@ -39,6 +40,7 @@ class HomeViewModel @Inject constructor(
     val effects = _effects.receiveAsFlow()
 
     init {
+        println("🟢 DEBUG: HomeViewModel init - starting data load")
         handleAction(HomeScreenAction.LoadLiveMatches)
         handleAction(HomeScreenAction.LoadTodayMatches)
         observeLiveMatches()
@@ -51,10 +53,12 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeScreenAction.LoadLiveMatches -> {
+                println("🟢 DEBUG: HomeViewModel handling LoadLiveMatches action")
                 loadLiveMatches()
             }
 
             is HomeScreenAction.LoadTodayMatches -> {
+                println("🟢 DEBUG: HomeViewModel handling LoadTodayMatches action")
                 loadTodayMatches()
             }
 
@@ -94,12 +98,23 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun loadLiveMatches() {
+        println("🟢 DEBUG: HomeViewModel.loadLiveMatches() starting")
         getLiveMatchesUseCase()
             .onEach { resource ->
-                val uiState = when (resource) {
-                    is Resource.Loading -> UiState.Loading
-                    is Resource.Success -> UiState.Success(resource.data ?: emptyList())
-                    is Resource.Error -> UiState.Error(resource.message ?: "Unknown error")
+                println("🟢 DEBUG: LiveMatches Resource received: ${resource::class.simpleName}")
+                val uiState: UiState<List<Match>> = when (resource) {
+                    is Resource.Loading -> {
+                        println("🟢 DEBUG: LiveMatches - Loading state")
+                        UiState.Loading
+                    }
+                    is Resource.Success -> {
+                        println("🟢 DEBUG: LiveMatches - Success with ${resource.data?.size ?: 0} matches")
+                        UiState.Success(resource.data ?: emptyList())
+                    }
+                    is Resource.Error -> {
+                        println("🔴 DEBUG: LiveMatches - Error: ${resource.message}")
+                        UiState.Error(resource.message ?: "Unknown error")
+                    }
                 }
                 updateState { copy(liveMatches = uiState) }
             }
@@ -117,12 +132,23 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun loadTodayMatches() {
+        println("🟢 DEBUG: HomeViewModel.loadTodayMatches() starting")
         getTodayMatchesUseCase()
             .onEach { resource ->
-                val uiState = when (resource) {
-                    is Resource.Loading -> UiState.Loading
-                    is Resource.Success -> UiState.Success(resource.data ?: emptyList())
-                    is Resource.Error -> UiState.Error(resource.message ?: "Unknown error")
+                println("🟢 DEBUG: TodayMatches Resource received: ${resource::class.simpleName}")
+                val uiState: UiState<List<Match>> = when (resource) {
+                    is Resource.Loading -> {
+                        println("🟢 DEBUG: TodayMatches - Loading state")
+                        UiState.Loading
+                    }
+                    is Resource.Success -> {
+                        println("🟢 DEBUG: TodayMatches - Success with ${resource.data?.size ?: 0} matches")
+                        UiState.Success(resource.data ?: emptyList())
+                    }
+                    is Resource.Error -> {
+                        println("🔴 DEBUG: TodayMatches - Error: ${resource.message}")
+                        UiState.Error(resource.message ?: "Unknown error")
+                    }
                 }
                 updateState { copy(todayMatches = uiState) }
             }
@@ -139,8 +165,8 @@ class HomeViewModel @Inject constructor(
     private fun toggleMatchFavorite(matchId: Int) {
         viewModelScope.launch {
             try {
-                // TODO: Implement favorite toggle
-                _effects.send(HomeScreenEffect.ShowSnackbar("Match favorite toggled"))
+                // TODO: Implement favorite toggle for match ID: $matchId
+                _effects.send(HomeScreenEffect.ShowSnackbar("Match $matchId favorite toggled"))
             } catch (e: Exception) {
                 _effects.send(HomeScreenEffect.ShowError("Failed to toggle favorite"))
             }

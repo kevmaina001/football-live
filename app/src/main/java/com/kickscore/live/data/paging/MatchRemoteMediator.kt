@@ -95,7 +95,7 @@ class MatchRemoteMediator(
 
                 val keys = matches.map {
                     RemoteKeyEntity(
-                        id = it.fixtureId.toString(),
+                        id = it.fixture.id.toString(),
                         prevKey = prevKey,
                         nextKey = nextKey
                     )

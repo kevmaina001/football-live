@@ -12,10 +12,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Sports
-import androidx.compose.material.icons.filled.SportsSoccer
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -87,17 +87,17 @@ fun KickScoreBottomNavigation(
         BottomNavItem(
             title = "Matches",
             route = Screen.Matches.route,
-            icon = Icons.Default.SportsSoccer
+            icon = Icons.Default.DateRange
         ),
         BottomNavItem(
             title = "Live TV",
             route = Screen.LiveTV.route,
-            icon = Icons.Default.LiveTv
+            icon = Icons.Default.PlayArrow
         ),
         BottomNavItem(
             title = "Leagues",
             route = Screen.Leagues.route,
-            icon = Icons.Default.Sports
+            icon = Icons.Default.List
         ),
         BottomNavItem(
             title = "Settings",

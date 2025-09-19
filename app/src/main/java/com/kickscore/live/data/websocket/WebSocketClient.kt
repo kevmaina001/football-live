@@ -203,7 +203,7 @@ class WebSocketClient @Inject constructor(
                 "match_event" -> {
                     val event = gson.fromJson(
                         gson.toJson(webSocketMessage.data),
-                        MatchEvent::class.java
+                        com.kickscore.live.data.websocket.MatchEvent::class.java
                     )
                     _events.tryEmit(WebSocketEvent.MatchEvent(event))
                 }
@@ -211,7 +211,7 @@ class WebSocketClient @Inject constructor(
                 "score_update" -> {
                     val scoreUpdate = gson.fromJson(
                         gson.toJson(webSocketMessage.data),
-                        ScoreUpdate::class.java
+                        com.kickscore.live.data.websocket.ScoreUpdate::class.java
                     )
                     _events.tryEmit(WebSocketEvent.ScoreUpdate(scoreUpdate))
                 }
@@ -219,7 +219,7 @@ class WebSocketClient @Inject constructor(
                 "status_update" -> {
                     val statusUpdate = gson.fromJson(
                         gson.toJson(webSocketMessage.data),
-                        StatusUpdate::class.java
+                        com.kickscore.live.data.websocket.StatusUpdate::class.java
                     )
                     _events.tryEmit(WebSocketEvent.StatusUpdate(statusUpdate))
                 }
@@ -274,9 +274,9 @@ sealed class WebSocketEvent {
     object Connected : WebSocketEvent()
     data class Disconnected(val code: Int, val reason: String) : WebSocketEvent()
     data class Error(val throwable: Throwable) : WebSocketEvent()
-    data class MatchEvent(val event: MatchEvent) : WebSocketEvent()
-    data class ScoreUpdate(val update: ScoreUpdate) : WebSocketEvent()
-    data class StatusUpdate(val update: StatusUpdate) : WebSocketEvent()
+    data class MatchEvent(val event: com.kickscore.live.data.websocket.MatchEvent) : WebSocketEvent()
+    data class ScoreUpdate(val update: com.kickscore.live.data.websocket.ScoreUpdate) : WebSocketEvent()
+    data class StatusUpdate(val update: com.kickscore.live.data.websocket.StatusUpdate) : WebSocketEvent()
 }
 
 sealed class ConnectionState {

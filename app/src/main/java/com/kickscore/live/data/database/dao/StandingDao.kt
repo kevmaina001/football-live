@@ -34,7 +34,7 @@ interface StandingDao {
 
     @Query("""
         SELECT * FROM standings
-        WHERE leagueId = :leagueId AND season = :season AND group = :group
+        WHERE leagueId = :leagueId AND season = :season AND group_name = :group
         ORDER BY rank ASC
     """)
     suspend fun getGroupStandings(
@@ -44,9 +44,9 @@ interface StandingDao {
     ): List<StandingEntity>
 
     @Query("""
-        SELECT DISTINCT group FROM standings
-        WHERE leagueId = :leagueId AND season = :season AND group IS NOT NULL
-        ORDER BY group ASC
+        SELECT DISTINCT group_name FROM standings
+        WHERE leagueId = :leagueId AND season = :season AND group_name IS NOT NULL
+        ORDER BY group_name ASC
     """)
     suspend fun getLeagueGroups(leagueId: Int, season: Int): List<String>
 

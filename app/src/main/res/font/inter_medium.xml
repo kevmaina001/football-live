@@ -6,5 +6,5 @@
         android:fontWeight="500"
         app:fontStyle="normal"
         app:fontWeight="500"
-        android:font="@font/roboto_medium" />
+        android:font="@font/roberto" />
 </font-family>

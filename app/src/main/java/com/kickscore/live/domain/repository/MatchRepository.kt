@@ -20,6 +20,8 @@ interface MatchRepository {
 
     fun getTodayMatches(): Flow<Resource<List<Match>>>
 
+    fun getMatchesForDate(date: String): Flow<Resource<List<Match>>>
+
     fun getMatchById(matchId: Int): Flow<Resource<Match>>
 
     fun getTeamMatches(teamId: Int, season: Int): Flow<Resource<List<Match>>>

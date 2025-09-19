@@ -15,6 +15,7 @@ class GetLiveMatchesUseCase @Inject constructor(
     private val repository: MatchRepository
 ) {
     operator fun invoke(): Flow<Resource<List<Match>>> {
+        println("🟠 DEBUG: GetLiveMatchesUseCase.invoke() called")
         return repository.getLiveMatches()
     }
 

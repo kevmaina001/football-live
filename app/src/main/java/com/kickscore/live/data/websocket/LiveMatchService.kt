@@ -145,17 +145,17 @@ class LiveMatchService @Inject constructor(
         }
     }
 
-    private fun handleMatchEvent(event: MatchEvent) {
+    private fun handleMatchEvent(event: com.kickscore.live.data.websocket.MatchEvent) {
         // This will be handled by repositories/use cases
         // that observe the events flow
         Log.d(TAG, "Processing match event: ${event.type} for match ${event.matchId}")
     }
 
-    private fun handleScoreUpdate(update: ScoreUpdate) {
+    private fun handleScoreUpdate(update: com.kickscore.live.data.websocket.ScoreUpdate) {
         Log.d(TAG, "Processing score update for match ${update.matchId}: ${update.homeScore}-${update.awayScore}")
     }
 
-    private fun handleStatusUpdate(update: StatusUpdate) {
+    private fun handleStatusUpdate(update: com.kickscore.live.data.websocket.StatusUpdate) {
         Log.d(TAG, "Processing status update for match ${update.matchId}: ${update.status}")
     }
 

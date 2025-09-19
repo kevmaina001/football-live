@@ -92,7 +92,7 @@ object Spacing {
 
     object BottomNavigation {
         val height = 80.dp
-        val iconSize = medium         // 24dp
+        val iconSize = Icon.medium    // 24dp
         val padding = sm              // 8dp
     }
 

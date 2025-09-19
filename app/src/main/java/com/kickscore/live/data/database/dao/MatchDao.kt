@@ -56,6 +56,20 @@ interface MatchDao {
     """)
     fun getTodayMatches(): Flow<List<MatchEntity>>
 
+    @Query("""
+        SELECT * FROM matches
+        WHERE DATE(matchDateTime) = DATE('now', 'localtime')
+        ORDER BY matchDateTime ASC
+    """)
+    suspend fun getTodayMatchesList(): List<MatchEntity>
+
+    @Query("""
+        SELECT * FROM matches
+        WHERE DATE(matchDateTime) = DATE(:date)
+        ORDER BY matchDateTime ASC
+    """)
+    fun getMatchesForDate(date: String): Flow<List<MatchEntity>>
+
     // Date range queries
     @Query("""
         SELECT * FROM matches

@@ -14,8 +14,10 @@ import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import com.kickscore.live.ui.screen.HomeScreen
 import com.kickscore.live.ui.screen.MatchDetailScreen
+import com.kickscore.live.ui.screen.MatchesScreen
 import com.kickscore.live.ui.screen.LeaguesScreen
 import com.kickscore.live.ui.screen.SettingsScreen
+import com.kickscore.live.ui.screen.LiveTvScreen
 
 @Composable
 fun KickScoreNavigation(
@@ -36,27 +38,9 @@ fun KickScoreNavigation(
         }
 
         composable(Screen.Matches.route) {
-            // For now, show the same home screen with matches focus
-            HomeScreen(
-                onNavigateToMatchDetail = { matchId ->
-                    navController.navigate(Screen.MatchDetail.createRoute(matchId))
-                }
-            )
-        }
-
-        composable(Screen.LiveTV.route) {
-            // TODO: Implement Live TV screen
-            HomeScreen(
-                onNavigateToMatchDetail = { matchId ->
-                    navController.navigate(Screen.MatchDetail.createRoute(matchId))
-                }
-            )
-        }
-
-        composable(Screen.Leagues.route) {
-            LeaguesScreen(
-                onNavigateToLeagueDetail = { leagueId ->
-                    // TODO: Navigate to league detail
+            MatchesScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 },
                 onNavigateToMatchDetail = { matchId ->
                     navController.navigate(Screen.MatchDetail.createRoute(matchId))
@@ -64,12 +48,16 @@ fun KickScoreNavigation(
             )
         }
 
+        composable(Screen.LiveTV.route) {
+            LiveTvScreen()
+        }
+
+        composable(Screen.Leagues.route) {
+            LeaguesScreen()
+        }
+
         composable(Screen.Settings.route) {
-            SettingsScreen(
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
-            )
+            SettingsScreen()
         }
 
         composable(
@@ -81,9 +69,7 @@ fun KickScoreNavigation(
             val matchId = backStackEntry.arguments?.getInt("matchId") ?: return@composable
             MatchDetailScreen(
                 matchId = matchId,
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

@@ -20,7 +20,7 @@ sealed class Resource<T>(
 
 // Extension functions for easier usage
 inline fun <T> Resource<T>.onSuccess(action: (value: T) -> Unit): Resource<T> {
-    if (this is Resource.Success) action(data)
+    if (this is Resource.Success) action(data!!)
     return this
 }
 

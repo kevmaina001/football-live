@@ -16,7 +16,7 @@ object MatchMapper {
 
     fun mapDtoToEntity(dto: MatchDto): MatchEntity {
         return MatchEntity(
-            id = dto.fixtureId,
+            id = dto.fixture.id,
 
             // Teams
             homeTeamId = dto.teams.home.id,

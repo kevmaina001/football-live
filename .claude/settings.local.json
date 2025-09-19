@@ -5,7 +5,18 @@
       "Bash(git branch:*)",
       "Bash(git checkout:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(grep:*)",
+      "Bash(export:*)",
+      "Bash(./gradlew:*)",
+      "Read(//c/Program Files/Java/**)",
+      "Read(//c//**)",
+      "Read(//c/Users/user/Downloads/**)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(set JAVA_HOME=C:Program FilesJavajdk-21)",
+      "Bash(where java)"
     ],
     "deny": [],
     "ask": []

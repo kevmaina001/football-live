@@ -1,0 +1,393 @@
+/*
+ * Concept derived from reference project (permission dated 2025-01-13).
+ * Implementation © 2025 Kev. See NOTICE.md for details.
+ */
+
+package com.kickscore.live.data.repository
+
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
+import com.kickscore.live.data.api.FootballApiService
+import com.kickscore.live.data.database.KickScoreDatabase
+import com.kickscore.live.data.database.entity.MatchEntity
+import com.kickscore.live.data.mapper.MatchMapper
+import com.kickscore.live.data.paging.MatchRemoteMediator
+import com.kickscore.live.data.websocket.LiveMatchService
+import com.kickscore.live.domain.model.Match
+import com.kickscore.live.domain.repository.MatchRepository
+import com.kickscore.live.domain.util.Resource
+import com.kickscore.live.util.DateUtils
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import java.time.LocalDate
+import java.time.LocalDateTime
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class MatchRepositoryImpl @Inject constructor(
+    private val apiService: FootballApiService,
+    private val database: KickScoreDatabase,
+    private val liveMatchService: LiveMatchService
+) : MatchRepository {
+
+    private val matchDao = database.matchDao()
+
+    @OptIn(ExperimentalPagingApi::class)
+    override fun getMatchesPaged(): Flow<PagingData<Match>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = false,
+                prefetchDistance = 5
+            ),
+            remoteMediator = MatchRemoteMediator(
+                apiService = apiService,
+                database = database
+            )
+        ) {
+            matchDao.getAllMatchesPagingSource()
+        }.flow.map { pagingData ->
+            pagingData.map { entity ->
+                MatchMapper.mapEntityToDomain(entity)
+            }
+        }
+    }
+
+    override fun getLiveMatches(): Flow<Resource<List<Match>>> = flow {
+        emit(Resource.Loading())
+
+        try {
+            // Emit cached data first
+            val cachedMatches = matchDao.getLiveMatchesList()
+            if (cachedMatches.isNotEmpty()) {
+                emit(Resource.Success(
+                    data = cachedMatches.map { MatchMapper.mapEntityToDomain(it) }
+                ))
+            }
+
+            // Fetch fresh data from API
+            val response = apiService.getLiveMatches()
+            if (response.isSuccessful) {
+                response.body()?.let { apiResponse ->
+                    val entities = MatchMapper.mapDtosToEntities(apiResponse.response)
+                    matchDao.refreshLiveMatches(entities)
+
+                    emit(Resource.Success(
+                        data = entities.map { MatchMapper.mapEntityToDomain(it) }
+                    ))
+                }
+            } else {
+                emit(Resource.Error(
+                    message = "Failed to fetch live matches: ${response.message()}",
+                    data = cachedMatches.map { MatchMapper.mapEntityToDomain(it) }
+                ))
+            }
+        } catch (e: Exception) {
+            emit(Resource.Error(
+                message = e.localizedMessage ?: "An unexpected error occurred",
+                data = matchDao.getLiveMatchesList().map { MatchMapper.mapEntityToDomain(it) }
+            ))
+        }
+    }
+
+    override fun getLiveMatchesFlow(): Flow<List<Match>> {
+        return combine(
+            matchDao.getLiveMatches(),
+            liveMatchService.liveUpdates
+        ) { cachedMatches, liveUpdate ->
+            // Update cached matches with live data
+            val updatedMatches = cachedMatches.map { entity ->
+                if (entity.id == liveUpdate.matchId) {
+                    MatchMapper.updateEntityWithLiveData(entity, liveUpdate)
+                } else {
+                    entity
+                }
+            }
+
+            updatedMatches.map { MatchMapper.mapEntityToDomain(it) }
+        }
+    }
+
+    override fun getTodayMatches(): Flow<Resource<List<Match>>> = flow {
+        emit(Resource.Loading())
+
+        try {
+            // Get today's date
+            val today = LocalDateTime.now().toLocalDate().atStartOfDay()
+            val todayString = DateUtils.formatApiDate(today)
+
+            // Emit cached data first
+            val cachedMatches = matchDao.getTodayMatchesList()
+            if (cachedMatches.isNotEmpty()) {
+                emit(Resource.Success(
+                    data = cachedMatches.map { MatchMapper.mapEntityToDomain(it) }
+                ))
+            }
+
+            // Fetch fresh data from API
+            val response = apiService.getTodayFixtures(todayString)
+            if (response.isSuccessful) {
+                response.body()?.let { apiResponse ->
+                    val entities = MatchMapper.mapDtosToEntities(apiResponse.response)
+                    matchDao.insertMatches(entities)
+
+                    emit(Resource.Success(
+                        data = entities.map { MatchMapper.mapEntityToDomain(it) }
+                    ))
+                }
+            } else {
+                emit(Resource.Error(
+                    message = "Failed to fetch today's matches: ${response.message()}",
+                    data = cachedMatches.map { MatchMapper.mapEntityToDomain(it) }
+                ))
+            }
+        } catch (e: Exception) {
+            emit(Resource.Error(
+                message = e.localizedMessage ?: "An unexpected error occurred",
+                data = matchDao.getTodayMatchesList().map { MatchMapper.mapEntityToDomain(it) }
+            ))
+        }
+    }
+
+    override fun getMatchesForDate(date: LocalDate): Flow<Resource<List<Match>>> = flow {
+        println("DEBUG: MatchRepositoryImpl - getMatchesForDate called with date: $date")
+        emit(Resource.Loading())
+
+        try {
+            val dateString = DateUtils.formatApiDate(date)
+            val dateTime = date.atStartOfDay()
+            println("DEBUG: MatchRepositoryImpl - Formatted date for API: '$dateString'")
+            println("DEBUG: MatchRepositoryImpl - DateTime for DB query: $dateTime")
+
+            // First check for cached data
+            val cachedMatches = matchDao.getMatchesByDate(dateTime).firstOrNull() ?: emptyList()
+            println("DEBUG: MatchRepositoryImpl - Found ${cachedMatches.size} cached matches for $date")
+
+            // Show cached data first if available
+            if (cachedMatches.isNotEmpty()) {
+                val domainMatches = cachedMatches.map { MatchMapper.mapEntityToDomain(it) }
+                println("DEBUG: MatchRepositoryImpl - Emitting cached matches")
+                emit(Resource.Success(data = domainMatches))
+            }
+
+            // Always try to fetch fresh data from API
+            println("DEBUG: MatchRepositoryImpl - Making API call with date: '$dateString'")
+            val response = apiService.getTodayFixtures(dateString)
+            println("DEBUG: MatchRepositoryImpl - API response: successful=${response.isSuccessful}, code=${response.code()}")
+
+            if (response.isSuccessful) {
+                response.body()?.let { apiResponse ->
+                    println("DEBUG: MatchRepositoryImpl - API response body contains ${apiResponse.response.size} matches")
+
+                    // Debug: Print first few match details
+                    apiResponse.response.take(3).forEach { matchDto ->
+                        println("DEBUG: MatchRepositoryImpl - Match DTO: ${matchDto.teams.home.name} vs ${matchDto.teams.away.name} at ${matchDto.fixture.date}")
+                    }
+
+                    if (apiResponse.response.isNotEmpty()) {
+                        val entities = MatchMapper.mapDtosToEntities(apiResponse.response)
+                        matchDao.insertMatches(entities)
+
+                        val domainMatches = entities.map { MatchMapper.mapEntityToDomain(it) }
+                        println("DEBUG: MatchRepositoryImpl - Successfully processed ${domainMatches.size} matches, emitting success")
+                        emit(Resource.Success(data = domainMatches))
+                    } else {
+                        println("DEBUG: MatchRepositoryImpl - API returned empty match list")
+                        emit(Resource.Success(data = emptyList()))
+                    }
+                } ?: run {
+                    println("DEBUG: MatchRepositoryImpl - API response body is null")
+                    emit(Resource.Error(
+                        message = "No data received from server",
+                        data = cachedMatches.map { MatchMapper.mapEntityToDomain(it) }
+                    ))
+                }
+            } else {
+                println("DEBUG: MatchRepositoryImpl - API call failed with code: ${response.code()}, message: ${response.message()}")
+                emit(Resource.Error(
+                    message = "Failed to fetch matches: ${response.message()}",
+                    data = cachedMatches.map { MatchMapper.mapEntityToDomain(it) }
+                ))
+            }
+        } catch (e: Exception) {
+            println("DEBUG: MatchRepositoryImpl - Exception occurred: ${e::class.simpleName}: ${e.message}")
+            e.printStackTrace()
+
+            // Try to provide cached data on error
+            try {
+                val cachedMatches = matchDao.getMatchesByDate(date.atStartOfDay()).firstOrNull() ?: emptyList()
+                emit(Resource.Error(
+                    message = e.localizedMessage ?: "Network error: ${e.message}",
+                    data = cachedMatches.map { MatchMapper.mapEntityToDomain(it) }
+                ))
+            } catch (dbError: Exception) {
+                println("DEBUG: MatchRepositoryImpl - Database error too: ${dbError.message}")
+                emit(Resource.Error(
+                    message = "Error: ${e.localizedMessage ?: e.message}"
+                ))
+            }
+        }
+    }
+
+    override fun getMatchById(matchId: Int): Flow<Resource<Match>> = flow {
+        println("DEBUG: MatchRepositoryImpl - getMatchById called with ID: $matchId")
+        emit(Resource.Loading())
+
+        var cachedMatch: MatchEntity? = null
+        try {
+            // Emit cached data first
+            println("DEBUG: MatchRepositoryImpl - Checking for cached match with ID: $matchId")
+            cachedMatch = matchDao.getMatchById(matchId)
+            if (cachedMatch != null) {
+                println("DEBUG: MatchRepositoryImpl - Found cached match: ${cachedMatch.homeTeamName} vs ${cachedMatch.awayTeamName}")
+                emit(Resource.Success(
+                    data = MatchMapper.mapEntityToDomain(cachedMatch)
+                ))
+            } else {
+                println("DEBUG: MatchRepositoryImpl - No cached match found for ID: $matchId")
+            }
+
+            // Fetch fresh data from API
+            println("DEBUG: MatchRepositoryImpl - Calling API for match ID: $matchId")
+            val response = apiService.getMatchDetails(matchId)
+            println("DEBUG: MatchRepositoryImpl - API response successful: ${response.isSuccessful}")
+            println("DEBUG: MatchRepositoryImpl - API response code: ${response.code()}")
+
+            if (response.isSuccessful) {
+                response.body()?.let { apiResponse ->
+                    println("DEBUG: MatchRepositoryImpl - API response body not null")
+                    println("DEBUG: MatchRepositoryImpl - API response: $apiResponse")
+                    val matches = apiResponse.response
+                    println("DEBUG: MatchRepositoryImpl - Matches count: ${matches.size}")
+                    val match = matches.firstOrNull()
+                    if (match != null) {
+                        println("DEBUG: MatchRepositoryImpl - Found match in API response: ${match.teams.home.name} vs ${match.teams.away.name}")
+                        val entity = MatchMapper.mapDtoToEntity(match)
+                        matchDao.insertMatch(entity)
+
+                        emit(Resource.Success(
+                            data = MatchMapper.mapEntityToDomain(entity)
+                        ))
+                    } else {
+                        println("DEBUG: MatchRepositoryImpl - No matches found in API response")
+                        // REMOVE FALLBACK - EXPOSE ERROR
+                        emit(Resource.Error(
+                            message = "Match not found with ID: $matchId"
+                        ))
+                    }
+                } ?: run {
+                    println("DEBUG: MatchRepositoryImpl - API response body is null")
+                    emit(Resource.Error(
+                        message = "API response body is null"
+                    ))
+                }
+            } else {
+                println("DEBUG: MatchRepositoryImpl - API call failed: ${response.message()}")
+                // REMOVE FALLBACK - EXPOSE ERROR
+                emit(Resource.Error(
+                    message = "Failed to fetch match details: ${response.message()}"
+                ))
+            }
+        } catch (e: Exception) {
+            println("DEBUG: MatchRepositoryImpl - Exception caught: ${e.message}")
+            println("DEBUG: MatchRepositoryImpl - Exception type: ${e::class.simpleName}")
+            e.printStackTrace()
+            // REMOVE FALLBACK - EXPOSE ERROR
+            emit(Resource.Error(
+                message = e.localizedMessage ?: "An unexpected error occurred: ${e.message}"
+            ))
+        }
+    }
+
+    override fun getTeamMatches(teamId: Int, season: Int): Flow<Resource<List<Match>>> = flow {
+        emit(Resource.Loading())
+
+        try {
+            // Get cached data first
+            val cachedMatches = matchDao.getTeamMatches(teamId, season).firstOrNull() ?: emptyList()
+            if (cachedMatches.isNotEmpty()) {
+                emit(Resource.Success(
+                    data = cachedMatches.map { MatchMapper.mapEntityToDomain(it) }
+                ))
+            }
+
+            // Fetch fresh data from API
+            val response = apiService.getTeamFixtures(teamId, season)
+            if (response.isSuccessful) {
+                response.body()?.let { apiResponse ->
+                    val entities = MatchMapper.mapDtosToEntities(apiResponse.response)
+                    matchDao.insertMatches(entities)
+                }
+            } else {
+                emit(Resource.Error(
+                    message = "Failed to fetch team matches: ${response.message()}"
+                ))
+            }
+        } catch (e: Exception) {
+            emit(Resource.Error(
+                message = e.localizedMessage ?: "An unexpected error occurred"
+            ))
+        }
+    }
+
+    override fun getLeagueMatches(leagueId: Int, season: Int): Flow<Resource<List<Match>>> = flow {
+        emit(Resource.Loading())
+
+        try {
+            // Get cached data first
+            val cachedMatches = matchDao.getLeagueMatches(leagueId, season).firstOrNull() ?: emptyList()
+            if (cachedMatches.isNotEmpty()) {
+                emit(Resource.Success(
+                    data = cachedMatches.map { MatchMapper.mapEntityToDomain(it) }
+                ))
+            }
+
+            // Fetch fresh data from API
+            val response = apiService.getLeagueFixtures(leagueId, season)
+            if (response.isSuccessful) {
+                response.body()?.let { apiResponse ->
+                    val entities = MatchMapper.mapDtosToEntities(apiResponse.response)
+                    matchDao.insertMatches(entities)
+                }
+            } else {
+                emit(Resource.Error(
+                    message = "Failed to fetch league matches: ${response.message()}"
+                ))
+            }
+        } catch (e: Exception) {
+            emit(Resource.Error(
+                message = e.localizedMessage ?: "An unexpected error occurred"
+            ))
+        }
+    }
+
+    override suspend fun subscribeToLiveMatch(matchId: Int) {
+        liveMatchService.subscribeToMatch(matchId)
+    }
+
+    override suspend fun unsubscribeFromLiveMatch(matchId: Int) {
+        liveMatchService.unsubscribeFromMatch(matchId)
+    }
+
+    override fun searchMatches(query: String): Flow<Resource<List<Match>>> = flow {
+        emit(Resource.Loading())
+
+        try {
+            val matches = matchDao.searchMatches(query)
+            emit(Resource.Success(
+                data = matches.map { MatchMapper.mapEntityToDomain(it) }
+            ))
+        } catch (e: Exception) {
+            emit(Resource.Error(
+                message = e.localizedMessage ?: "An unexpected error occurred"
+            ))
+        }
+    }
+}

@@ -15,6 +15,7 @@ class GetTodayMatchesUseCase @Inject constructor(
     private val repository: MatchRepository
 ) {
     operator fun invoke(): Flow<Resource<List<Match>>> {
+        println("🟠 DEBUG: GetTodayMatchesUseCase.invoke() called")
         return repository.getTodayMatches()
     }
 }

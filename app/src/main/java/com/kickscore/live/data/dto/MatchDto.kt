@@ -8,9 +8,6 @@ package com.kickscore.live.data.dto
 import com.google.gson.annotations.SerializedName
 
 data class MatchDto(
-    @SerializedName("fixture_id")
-    val fixtureId: Int,
-
     @SerializedName("fixture")
     val fixture: FixtureDto,
 

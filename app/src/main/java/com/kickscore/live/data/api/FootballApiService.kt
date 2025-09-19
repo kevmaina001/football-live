@@ -6,6 +6,7 @@
 package com.kickscore.live.data.api
 
 import com.kickscore.live.data.dto.ApiResponse
+import com.kickscore.live.data.dto.LeagueInfoDto
 import com.kickscore.live.data.dto.LeagueResponse
 import com.kickscore.live.data.dto.MatchDto
 import com.kickscore.live.data.dto.MatchResponse
@@ -80,7 +81,7 @@ interface FootballApiService {
         @Query("country") country: String? = null,
         @Query("season") season: Int? = null,
         @Query("current") current: Boolean = true
-    ): Response<ApiResponse<LeagueResponse>>
+    ): Response<ApiResponse<List<LeagueInfoDto>>>
 
     // League standings
     @GET("standings")
