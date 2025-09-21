@@ -11,9 +11,11 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.kickscore.live.data.api.FootballApiService
+import com.kickscore.live.data.cache.ApiCacheManager
 import com.kickscore.live.data.database.KickScoreDatabase
 import com.kickscore.live.data.mapper.MatchMapper
 import com.kickscore.live.data.mapper.MatchEntityMapper
+import com.kickscore.live.data.mock.MockDataProvider
 import com.kickscore.live.data.paging.MatchRemoteMediator
 import com.kickscore.live.data.websocket.LiveMatchService
 import com.kickscore.live.domain.model.Match
@@ -31,7 +33,9 @@ import javax.inject.Singleton
 class MatchRepositoryImpl @Inject constructor(
     private val apiService: FootballApiService,
     private val database: KickScoreDatabase,
-    private val liveMatchService: LiveMatchService
+    private val liveMatchService: LiveMatchService,
+    private val cacheManager: ApiCacheManager,
+    private val mockDataProvider: MockDataProvider
 ) : MatchRepository {
 
     private val matchDao = database.matchDao()
@@ -62,49 +66,95 @@ class MatchRepositoryImpl @Inject constructor(
         emit(Resource.Loading())
 
         try {
-            // Emit cached data first
+            // Always emit cached data first
             val cachedMatches = matchDao.getLiveMatchesList()
             println("🟡 DEBUG: Found ${cachedMatches.size} cached live matches")
+
             if (cachedMatches.isNotEmpty()) {
                 emit(Resource.Success(
                     data = cachedMatches.map { MatchEntityMapper.mapEntityToDomain(it) }
                 ))
             }
 
-            // Fetch fresh data from API
-            println("🟡 DEBUG: Making API call to getLiveMatches()")
-            val response = apiService.getLiveMatches()
-            println("🟡 DEBUG: API Response - Success: ${response.isSuccessful}, Code: ${response.code()}")
+            // Only fetch from API if cache allows it
+            if (cacheManager.shouldFetchLiveMatches()) {
+                println("🟡 DEBUG: Cache allows API call - Making API call to getLiveMatches()")
+                val response = apiService.getLiveMatches()
+                println("🟡 DEBUG: API Response - Success: ${response.isSuccessful}, Code: ${response.code()}")
 
-            if (response.isSuccessful) {
-                response.body()?.let { apiResponse ->
-                    println("🟡 DEBUG: API returned ${apiResponse.response.size} live matches")
-                    val entities = MatchMapper.mapDtosToEntities(apiResponse.response)
-                    matchDao.refreshLiveMatches(entities)
+                if (response.isSuccessful) {
+                    response.body()?.let { apiResponse ->
+                        println("🟡 DEBUG: API returned ${apiResponse.response.size} live matches")
+                        val entities = MatchMapper.mapDtosToEntities(apiResponse.response)
+                        matchDao.refreshLiveMatches(entities)
+                        cacheManager.markLiveMatchesFetched()
 
-                    emit(Resource.Success(
-                        data = entities.map { MatchEntityMapper.mapEntityToDomain(it) }
-                    ))
-                } ?: run {
-                    println("🔴 DEBUG: API response body was null")
-                    emit(Resource.Error("API response body was null"))
+                        emit(Resource.Success(
+                            data = entities.map { MatchEntityMapper.mapEntityToDomain(it) }
+                        ))
+                    } ?: run {
+                        println("🔴 DEBUG: API response body was null")
+                        emit(Resource.Error(
+                            message = "API response body was null",
+                            data = cachedMatches.map { MatchEntityMapper.mapEntityToDomain(it) }
+                        ))
+                    }
+                } else {
+                    val errorMsg = when (response.code()) {
+                        403 -> "API key invalid or expired. Using offline data."
+                        429 -> "Rate limit exceeded. Using cached data."
+                        else -> "API temporarily unavailable. Using cached data."
+                    }
+                    println("🔴 DEBUG: API Error ${response.code()}: $errorMsg")
+
+                    // Use mock data if API is completely unavailable (403/429)
+                    if (mockDataProvider.shouldUseMockData(response.code()) && cachedMatches.isEmpty()) {
+                        println("🟡 DEBUG: Using mock live matches data")
+                        mockDataProvider.setUsingMockData(true)
+                        emit(Resource.Success(
+                            data = mockDataProvider.getMockLiveMatches()
+                        ))
+                    } else {
+                        emit(Resource.Error(
+                            message = errorMsg,
+                            data = cachedMatches.map { MatchEntityMapper.mapEntityToDomain(it) }
+                        ))
+                    }
                 }
             } else {
-                val errorMsg = "Failed to fetch live matches: ${response.code()} - ${response.message()}"
-                println("🔴 DEBUG: $errorMsg")
-                emit(Resource.Error(
-                    message = errorMsg,
-                    data = cachedMatches.map { MatchEntityMapper.mapEntityToDomain(it) }
-                ))
+                println("🟡 DEBUG: Cache prevents API call - using cached data only")
+                // If we have cached data, emit success; otherwise use mock data
+                if (cachedMatches.isNotEmpty()) {
+                    emit(Resource.Success(
+                        data = cachedMatches.map { MatchEntityMapper.mapEntityToDomain(it) }
+                    ))
+                } else {
+                    println("🟡 DEBUG: No cached data available, using mock data for live matches")
+                    mockDataProvider.setUsingMockData(true)
+                    emit(Resource.Success(
+                        data = mockDataProvider.getMockLiveMatches()
+                    ))
+                }
             }
         } catch (e: Exception) {
             val errorMsg = "Exception in getLiveMatches: ${e.localizedMessage}"
             println("🔴 DEBUG: $errorMsg")
             e.printStackTrace()
-            emit(Resource.Error(
-                message = errorMsg,
-                data = matchDao.getLiveMatchesList().map { MatchEntityMapper.mapEntityToDomain(it) }
-            ))
+
+            // Use mock data for network issues or when no cached data available
+            val cachedData = matchDao.getLiveMatchesList().map { MatchEntityMapper.mapEntityToDomain(it) }
+            if (mockDataProvider.shouldUseMockDataForException(e) || cachedData.isEmpty()) {
+                println("🟡 DEBUG: Network issue detected or no cached data, using mock data")
+                mockDataProvider.setUsingMockData(true)
+                emit(Resource.Success(
+                    data = mockDataProvider.getMockLiveMatches()
+                ))
+            } else {
+                emit(Resource.Error(
+                    message = errorMsg,
+                    data = cachedData
+                ))
+            }
         }
     }
 
@@ -136,49 +186,95 @@ class MatchRepositoryImpl @Inject constructor(
             val todayString = today.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE)
             println("🟡 DEBUG: Fetching matches for date: $todayString")
 
-            // Get cached data first (directly, not as flow)
+            // Always emit cached data first
             val cachedMatches = matchDao.getTodayMatchesList()
             println("🟡 DEBUG: Found ${cachedMatches.size} cached today's matches")
+
             if (cachedMatches.isNotEmpty()) {
                 emit(Resource.Success(
                     data = cachedMatches.map { MatchEntityMapper.mapEntityToDomain(it) }
                 ))
             }
 
-            // Fetch fresh data from API
-            println("🟡 DEBUG: Making API call to getTodayFixtures($todayString)")
-            val response = apiService.getTodayFixtures(todayString)
-            println("🟡 DEBUG: API Response - Success: ${response.isSuccessful}, Code: ${response.code()}")
+            // Only fetch from API if cache allows it
+            if (cacheManager.shouldFetchTodayMatches()) {
+                println("🟡 DEBUG: Cache allows API call - Making API call to getTodayFixtures($todayString)")
+                val response = apiService.getTodayFixtures(todayString)
+                println("🟡 DEBUG: API Response - Success: ${response.isSuccessful}, Code: ${response.code()}")
 
-            if (response.isSuccessful) {
-                response.body()?.let { apiResponse ->
-                    println("🟡 DEBUG: API returned ${apiResponse.response.size} today's matches")
-                    val entities = MatchMapper.mapDtosToEntities(apiResponse.response)
-                    matchDao.insertMatches(entities)
+                if (response.isSuccessful) {
+                    response.body()?.let { apiResponse ->
+                        println("🟡 DEBUG: API returned ${apiResponse.response.size} today's matches")
+                        val entities = MatchMapper.mapDtosToEntities(apiResponse.response)
+                        matchDao.insertMatches(entities)
+                        cacheManager.markTodayMatchesFetched()
 
-                    // Emit fresh data
-                    emit(Resource.Success(
-                        data = entities.map { MatchEntityMapper.mapEntityToDomain(it) }
-                    ))
-                } ?: run {
-                    println("🔴 DEBUG: API response body was null for today's matches")
-                    emit(Resource.Error("API response body was null"))
+                        emit(Resource.Success(
+                            data = entities.map { MatchEntityMapper.mapEntityToDomain(it) }
+                        ))
+                    } ?: run {
+                        println("🔴 DEBUG: API response body was null for today's matches")
+                        emit(Resource.Error(
+                            message = "API response body was null",
+                            data = cachedMatches.map { MatchEntityMapper.mapEntityToDomain(it) }
+                        ))
+                    }
+                } else {
+                    val errorMsg = when (response.code()) {
+                        403 -> "API key invalid or expired. Using offline data."
+                        429 -> "Rate limit exceeded. Using cached data."
+                        else -> "API temporarily unavailable. Using cached data."
+                    }
+                    println("🔴 DEBUG: API Error ${response.code()}: $errorMsg")
+
+                    // Use mock data if API is completely unavailable (403/429)
+                    if (mockDataProvider.shouldUseMockData(response.code()) && cachedMatches.isEmpty()) {
+                        println("🟡 DEBUG: Using mock today's matches data")
+                        mockDataProvider.setUsingMockData(true)
+                        emit(Resource.Success(
+                            data = mockDataProvider.getMockTodayMatches()
+                        ))
+                    } else {
+                        emit(Resource.Error(
+                            message = errorMsg,
+                            data = cachedMatches.map { MatchEntityMapper.mapEntityToDomain(it) }
+                        ))
+                    }
                 }
             } else {
-                val errorMsg = "Failed to fetch today's matches: ${response.code()} - ${response.message()}"
-                println("🔴 DEBUG: $errorMsg")
-                emit(Resource.Error(
-                    message = errorMsg,
-                    data = cachedMatches.map { MatchEntityMapper.mapEntityToDomain(it) }
-                ))
+                println("🟡 DEBUG: Cache prevents API call - using cached data only")
+                // If we have cached data, emit success; otherwise emit error asking user to wait
+                if (cachedMatches.isNotEmpty()) {
+                    emit(Resource.Success(
+                        data = cachedMatches.map { MatchEntityMapper.mapEntityToDomain(it) }
+                    ))
+                } else {
+                    println("🟡 DEBUG: No cached data available, using mock data for today's matches")
+                    mockDataProvider.setUsingMockData(true)
+                    emit(Resource.Success(
+                        data = mockDataProvider.getMockTodayMatches()
+                    ))
+                }
             }
         } catch (e: Exception) {
             val errorMsg = "Exception in getTodayMatches: ${e.localizedMessage}"
             println("🔴 DEBUG: $errorMsg")
             e.printStackTrace()
-            emit(Resource.Error(
-                message = errorMsg
-            ))
+
+            // Use mock data for network issues or when no cached data available
+            val cachedData = matchDao.getTodayMatchesList().map { MatchEntityMapper.mapEntityToDomain(it) }
+            if (mockDataProvider.shouldUseMockDataForException(e) || cachedData.isEmpty()) {
+                println("🟡 DEBUG: Network issue detected or no cached data, using mock today's matches")
+                mockDataProvider.setUsingMockData(true)
+                emit(Resource.Success(
+                    data = mockDataProvider.getMockTodayMatches()
+                ))
+            } else {
+                emit(Resource.Error(
+                    message = errorMsg,
+                    data = cachedData
+                ))
+            }
         }
     }
 

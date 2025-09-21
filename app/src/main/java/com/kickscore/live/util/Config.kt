@@ -6,7 +6,7 @@
 package com.kickscore.live.util
 
 object Config {
-    const val API_KEY = "YOUR_RAPIDAPI_KEY_HERE"
+    const val API_KEY = "3bdb371035msh4a88eff8edf2ec5p103690jsnd48d0c24e31b"
 
     // Priority leagues with major competitions always shown
     val PRIORITY_LEAGUE_IDS = intArrayOf(

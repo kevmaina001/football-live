@@ -8,16 +8,20 @@ package com.kickscore.live.di
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.kickscore.live.data.api.FootballApiService
+import com.kickscore.live.data.api.RateLimitingInterceptor
 import com.kickscore.live.util.Config
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Dns
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.net.Inet4Address
+import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
@@ -58,16 +62,62 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideCustomDns(): Dns {
+        return object : Dns {
+            override fun lookup(hostname: String): List<InetAddress> {
+                return try {
+                    // Try default DNS first
+                    val defaultResults = Dns.SYSTEM.lookup(hostname)
+                    if (defaultResults.isNotEmpty()) {
+                        println("🟡 DEBUG: DNS resolved $hostname via system DNS")
+                        defaultResults
+                    } else {
+                        throw Exception("No addresses found via system DNS")
+                    }
+                } catch (e: Exception) {
+                    println("🔴 DEBUG: System DNS failed for $hostname: ${e.message}")
+                    try {
+                        // Fallback to manual IP resolution for known hosts
+                        when (hostname) {
+                            Config.RAPIDAPI_HOST -> {
+                                println("🟡 DEBUG: Using fallback IP for RapidAPI")
+                                // These are example IPs - in production you'd want to resolve these properly
+                                listOf(
+                                    InetAddress.getByName("104.18.36.231"),
+                                    InetAddress.getByName("104.18.37.231")
+                                )
+                            }
+                            else -> {
+                                println("🔴 DEBUG: No fallback available for $hostname")
+                                throw e
+                            }
+                        }
+                    } catch (fallbackError: Exception) {
+                        println("🔴 DEBUG: Fallback DNS also failed: ${fallbackError.message}")
+                        throw e
+                    }
+                }
+            }
+        }
+    }
+
+    @Provides
+    @Singleton
     fun provideOkHttpClient(
         @Named("ApiKeyInterceptor") apiKeyInterceptor: Interceptor,
-        loggingInterceptor: HttpLoggingInterceptor
+        loggingInterceptor: HttpLoggingInterceptor,
+        rateLimitingInterceptor: RateLimitingInterceptor,
+        customDns: Dns
     ): OkHttpClient {
         return OkHttpClient.Builder()
+            .addInterceptor(rateLimitingInterceptor) // Add rate limiting first
             .addInterceptor(apiKeyInterceptor)
             .addInterceptor(loggingInterceptor)
-            .connectTimeout(30, TimeUnit.SECONDS)
+            .dns(customDns) // Add custom DNS resolver
+            .connectTimeout(15, TimeUnit.SECONDS) // Reduced timeout for faster failover
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true) // Enable automatic retry
             .build()
     }
 

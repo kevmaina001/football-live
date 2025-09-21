@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -42,7 +43,13 @@ class HomeViewModel @Inject constructor(
     init {
         println("🟢 DEBUG: HomeViewModel init - starting data load")
         handleAction(HomeScreenAction.LoadLiveMatches)
-        handleAction(HomeScreenAction.LoadTodayMatches)
+
+        // Add delay before loading today's matches to prevent rate limiting
+        viewModelScope.launch {
+            delay(1000) // 1 second delay
+            handleAction(HomeScreenAction.LoadTodayMatches)
+        }
+
         observeLiveMatches()
     }
 
@@ -93,8 +100,13 @@ class HomeViewModel @Inject constructor(
     private fun refreshData() {
         updateState { copy(isRefreshing = true) }
         loadLiveMatches()
-        loadTodayMatches()
-        updateState { copy(isRefreshing = false) }
+
+        // Add delay between API calls to prevent rate limiting
+        viewModelScope.launch {
+            delay(1500) // 1.5 second delay for refresh
+            loadTodayMatches()
+            updateState { copy(isRefreshing = false) }
+        }
     }
 
     private fun loadLiveMatches() {

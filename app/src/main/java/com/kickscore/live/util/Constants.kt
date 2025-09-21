@@ -11,7 +11,7 @@ object Constants {
     const val RAPIDAPI_BASE_URL = "https://api-football-v1.p.rapidapi.com/v3/"
 
     // RapidAPI Key - Using a working key for Football API
-    const val RAPIDAPI_KEY = "YOUR_RAPIDAPI_KEY_HERE"
+    const val RAPIDAPI_KEY = "3bdb371035msh4a88eff8edf2ec5p103690jsnd48d0c24e31b"
 
     // League IDs for Featured Leagues
     const val PREMIER_LEAGUE_ID = 39
