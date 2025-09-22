@@ -1,0 +1,74 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+  <group android:scaleX="1.0"
+         android:scaleY="1.0"
+         android:pivotX="54"
+         android:pivotY="54">
+
+    <!-- Large Football/Soccer ball - main focal point -->
+    <path android:pathData="M54,24 m-22,0 a22,22 0,1,1 44,0 a22,22 0,1,1 -44,0"
+          android:fillColor="#FFFFFF"
+          android:strokeColor="#E0E0E0"
+          android:strokeWidth="1"/>
+
+    <!-- Football pattern - Pentagon center (larger) -->
+    <path
+        android:pathData="M54,30 L62,37 L58,46 L50,46 L46,37 Z"
+        android:fillColor="#1A237E"/>
+
+    <!-- Football pattern - Surrounding hexagons (larger) -->
+    <path
+        android:pathData="M40,38 L46,37 L50,46 L43,52 L35,48 Z"
+        android:fillColor="#1A237E"/>
+
+    <path
+        android:pathData="M68,38 L73,48 L65,52 L58,46 L62,37 Z"
+        android:fillColor="#1A237E"/>
+
+    <path
+        android:pathData="M43,52 L50,46 L58,46 L65,52 L62,62 L46,62 Z"
+        android:fillColor="#1A237E"/>
+
+    <path
+        android:pathData="M35,48 L43,52 L46,62 L38,67 L32,58 Z"
+        android:fillColor="#1A237E"/>
+
+    <path
+        android:pathData="M73,48 L76,58 L70,67 L62,62 L65,52 Z"
+        android:fillColor="#1A237E"/>
+
+    <!-- Score24Seven branding below the ball -->
+    <!-- "24" in bold gold -->
+    <path
+        android:pathData="M42,76 L42,88 M36,82 L48,82"
+        android:strokeColor="#FFD700"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"/>
+
+    <path
+        android:pathData="M52,76 Q58,76 58,80 L58,82 Q58,84 52,84 L48,84 Q44,84 44,88 L58,88"
+        android:strokeColor="#FFD700"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round"/>
+
+    <!-- "7" in white -->
+    <path
+        android:pathData="M62,76 L72,76 L67,88"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"/>
+
+    <!-- Small decorative dots -->
+    <path android:pathData="M25,25 m-2,0 a2,2 0,1,1 4,0 a2,2 0,1,1 -4,0" android:fillColor="#FFD700" android:alpha="0.7"/>
+    <path android:pathData="M83,25 m-2,0 a2,2 0,1,1 4,0 a2,2 0,1,1 -4,0" android:fillColor="#FFD700" android:alpha="0.7"/>
+    <path android:pathData="M25,83 m-2,0 a2,2 0,1,1 4,0 a2,2 0,1,1 -4,0" android:fillColor="#FFFFFF" android:alpha="0.6"/>
+    <path android:pathData="M83,83 m-2,0 a2,2 0,1,1 4,0 a2,2 0,1,1 -4,0" android:fillColor="#FFFFFF" android:alpha="0.6"/>
+
+  </group>
+
+</vector>

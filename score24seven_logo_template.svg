@@ -1,0 +1,50 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" style="stop-color:#1A237E;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3F51B5;stop-opacity:1" />
+    </radialGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="rgba(0,0,0,0.3)"/>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bg)" filter="url(#shadow)"/>
+
+  <!-- Football/Soccer ball -->
+  <circle cx="256" cy="180" r="60" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="2"/>
+
+  <!-- Football pattern - Pentagon center -->
+  <polygon points="256,140 276,155 268,180 244,180 236,155" fill="#1A237E"/>
+
+  <!-- Football pattern - Hexagons around -->
+  <polygon points="210,165 236,155 244,180 218,195 195,180" fill="#1A237E"/>
+  <polygon points="302,165 317,180 294,195 268,180 276,155" fill="#1A237E"/>
+  <polygon points="218,195 244,180 268,180 294,195 276,220 236,220" fill="#1A237E"/>
+  <polygon points="195,180 218,195 236,220 210,235 190,215" fill="#1A237E"/>
+  <polygon points="317,180 322,215 302,235 276,220 294,195" fill="#1A237E"/>
+
+  <!-- Main text: SCORE -->
+  <text x="256" y="280" text-anchor="middle"
+        style="font-family: 'Arial Black', Arial, sans-serif; font-size: 48px; font-weight: 900; fill: #FFFFFF; letter-spacing: 2px;">SCORE</text>
+
+  <!-- Number: 24 -->
+  <text x="200" y="330" text-anchor="middle"
+        style="font-family: 'Arial Black', Arial, sans-serif; font-size: 64px; font-weight: 900; fill: #FFD700; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">24</text>
+
+  <!-- Text: SEVEN -->
+  <text x="320" y="325" text-anchor="middle"
+        style="font-family: 'Arial Black', Arial, sans-serif; font-size: 36px; font-weight: 900; fill: #FFFFFF; letter-spacing: 1px;">SEVEN</text>
+
+  <!-- Subtitle -->
+  <text x="256" y="370" text-anchor="middle"
+        style="font-family: Arial, sans-serif; font-size: 20px; fill: #B0BEC5; letter-spacing: 3px;">LIVE FOOTBALL</text>
+
+  <!-- Decorative elements -->
+  <circle cx="100" cy="350" r="8" fill="#FFD700" opacity="0.6"/>
+  <circle cx="412" cy="350" r="8" fill="#FFD700" opacity="0.6"/>
+  <circle cx="150" cy="400" r="6" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="362" cy="400" r="6" fill="#FFFFFF" opacity="0.4"/>
+</svg>

@@ -1,0 +1,93 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Background gradient circle -->
+    <path
+        android:pathData="M256,16 C393.2,16 496,118.8 496,256 C496,393.2 393.2,496 256,496 C118.8,496 16,393.2 16,256 C16,118.8 118.8,16 256,16 Z"
+        android:fillType="nonZero">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:gradientRadius="240"
+                android:centerX="256"
+                android:centerY="200"
+                android:type="radial">
+                <item android:offset="0" android:color="#1A237E"/>
+                <item android:offset="1" android:color="#3F51B5"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Football/Soccer ball as path -->
+    <path android:pathData="M256,120 m-60,0 a60,60 0,1,1 120,0 a60,60 0,1,1 -120,0"
+          android:fillColor="#FFFFFF"
+          android:strokeColor="#E0E0E0"
+          android:strokeWidth="2"/>
+
+    <!-- Football pattern - Pentagon center -->
+    <path
+        android:pathData="M256,140 L276,155 L268,180 L244,180 L236,155 Z"
+        android:fillColor="#1A237E"/>
+
+    <!-- Football pattern - Surrounding hexagons -->
+    <path
+        android:pathData="M210,165 L236,155 L244,180 L218,195 L195,180 Z"
+        android:fillColor="#1A237E"/>
+
+    <path
+        android:pathData="M302,165 L317,180 L294,195 L268,180 L276,155 Z"
+        android:fillColor="#1A237E"/>
+
+    <path
+        android:pathData="M218,195 L244,180 L268,180 L294,195 L276,220 L236,220 Z"
+        android:fillColor="#1A237E"/>
+
+    <path
+        android:pathData="M195,180 L218,195 L236,220 L210,235 L190,215 Z"
+        android:fillColor="#1A237E"/>
+
+    <path
+        android:pathData="M317,180 L322,215 L302,235 L276,220 L294,195 Z"
+        android:fillColor="#1A237E"/>
+
+    <!-- Score24Seven text shapes (simplified geometric representation) -->
+    <!-- Letter S -->
+    <path
+        android:pathData="M180,280 Q160,280 160,300 Q160,320 180,320 L220,320 Q240,320 240,340 Q240,360 220,360 L180,360"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="8"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round"/>
+
+    <!-- Number 24 -->
+    <path
+        android:pathData="M280,280 L280,360 M260,320 L300,320"
+        android:strokeColor="#FFD700"
+        android:strokeWidth="12"
+        android:strokeLineCap="round"/>
+
+    <path
+        android:pathData="M320,280 Q340,280 340,300 L340,320 Q340,340 320,340 L300,340 Q280,340 280,360 L340,360"
+        android:strokeColor="#FFD700"
+        android:strokeWidth="8"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round"/>
+
+    <!-- Number 7 -->
+    <path
+        android:pathData="M360,280 L400,280 L380,360"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="10"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round"/>
+
+    <!-- Decorative elements as paths -->
+    <path android:pathData="M100,350 m-8,0 a8,8 0,1,1 16,0 a8,8 0,1,1 -16,0" android:fillColor="#FFD700" android:alpha="0.6"/>
+    <path android:pathData="M412,350 m-8,0 a8,8 0,1,1 16,0 a8,8 0,1,1 -16,0" android:fillColor="#FFD700" android:alpha="0.6"/>
+    <path android:pathData="M150,400 m-6,0 a6,6 0,1,1 12,0 a6,6 0,1,1 -12,0" android:fillColor="#FFFFFF" android:alpha="0.4"/>
+    <path android:pathData="M362,400 m-6,0 a6,6 0,1,1 12,0 a6,6 0,1,1 -12,0" android:fillColor="#FFFFFF" android:alpha="0.4"/>
+
+</vector>

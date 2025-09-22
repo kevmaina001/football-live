@@ -17,7 +17,7 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@drawable/logo"
         android:label="@string/app_name"
-        android:name=".KickScoreApplication"
+        android:name=".Score24SevenApplication"
         android:roundIcon="@drawable/logo"
         android:supportsRtl="true"
         tools:node="replace"
@@ -35,7 +35,7 @@
             android:name="com.tvfootballhd.liveandstream.Activity.RecentMatchDetailsActivity"/>
         <activity
             android:exported="true"
-            android:name="com.kickscore.live.MainActivity"
+            android:name="com.score24seven.MainActivity"
             android:theme="@style/Theme.FootballScore">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

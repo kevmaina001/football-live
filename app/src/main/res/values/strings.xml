@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Football TV</string>
+    <string name="app_name">Score24Seven</string>
 
     <string name="Admob_App_ID">ca-app-pub-3940256099942544~3347511713</string>
     <string name="TopOnAppID" translatable="false">h68b226290a6e0</string>
