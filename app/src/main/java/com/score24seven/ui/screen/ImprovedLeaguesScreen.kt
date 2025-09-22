@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.score24seven.data.model.SimpleLeagueItem
 import com.score24seven.data.model.SimpleStanding
 import com.score24seven.ui.viewmodel.SimpleLeaguesViewModel
@@ -35,6 +36,7 @@ import com.score24seven.ui.viewmodel.SimpleLeaguesUiState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImprovedLeaguesScreen(
+    onNavigateToLeagueDetails: ((Int, Int, String) -> Unit)? = null,
     viewModel: SimpleLeaguesViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -54,11 +56,21 @@ fun ImprovedLeaguesScreen(
             onLeagueClick = { leagueItem ->
                 val currentSeason = leagueItem.seasons?.find { it.current }
                 if (currentSeason != null && leagueItem.league != null) {
-                    viewModel.loadStandings(
-                        leagueItem.league.id,
-                        currentSeason.year,
-                        leagueItem.league.name ?: "Unknown League"
-                    )
+                    // Navigate to comprehensive league details if navigation is available
+                    if (onNavigateToLeagueDetails != null) {
+                        onNavigateToLeagueDetails(
+                            leagueItem.league.id,
+                            currentSeason.year,
+                            leagueItem.league.name ?: "Unknown League"
+                        )
+                    } else {
+                        // Fallback to old standings-only view
+                        viewModel.loadStandings(
+                            leagueItem.league.id,
+                            currentSeason.year,
+                            leagueItem.league.name ?: "Unknown League"
+                        )
+                    }
                 }
             },
             onRefresh = viewModel::retry
@@ -246,22 +258,31 @@ private fun PopularLeagueCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Star badge
+            // League logo
             Box(
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.surface,
                         CircleShape
-                    ),
+                    )
+                    .clip(CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.Star,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp)
-                )
+                if (league.league?.logo != null) {
+                    AsyncImage(
+                        model = league.league.logo,
+                        contentDescription = "${league.league.name} logo",
+                        modifier = Modifier.size(40.dp)
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -323,20 +344,29 @@ private fun RegularLeagueCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Country flag or default icon
+            // League logo
             Box(
                 modifier = Modifier
                     .size(40.dp)
                     .background(
                         MaterialTheme.colorScheme.surfaceVariant,
                         CircleShape
-                    ),
+                    )
+                    .clip(CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = league.country?.flag ?: "⚽",
-                    style = MaterialTheme.typography.titleMedium
-                )
+                if (league.league?.logo != null) {
+                    AsyncImage(
+                        model = league.league.logo,
+                        contentDescription = "${league.league.name} logo",
+                        modifier = Modifier.size(32.dp)
+                    )
+                } else {
+                    Text(
+                        text = league.country?.flag ?: "⚽",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))

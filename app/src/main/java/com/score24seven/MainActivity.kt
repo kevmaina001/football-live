@@ -24,6 +24,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -44,7 +46,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            Score24SevenTheme {
+            val isDarkMode by Score24SevenApplication.preferencesManager.isDarkMode.collectAsState()
+
+            // Debug logging
+            LaunchedEffect(isDarkMode) {
+                println("🎨 DEBUG: MainActivity - Theme changed to: ${if (isDarkMode) "Dark" else "Light"}")
+            }
+
+            Score24SevenTheme(darkTheme = isDarkMode) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

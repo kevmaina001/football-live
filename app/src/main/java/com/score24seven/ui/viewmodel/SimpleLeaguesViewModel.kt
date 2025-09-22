@@ -42,16 +42,23 @@ class SimpleLeaguesViewModel(application: Application) : AndroidViewModel(applic
                         }
                     }
 
-                    val priorityLeagues = leagues.filter { league ->
+                    // Show ALL current leagues with standings coverage
+                    val allCurrentLeagues = leagues.filter { league ->
+                        league.seasons?.any { season ->
+                            season.current == true && season.coverage?.standings == true
+                        } == true
+                    }
+
+                    // Separate priority leagues for better organization
+                    val priorityLeagues = allCurrentLeagues.filter { league ->
                         league.league?.id in listOf(39, 2, 3, 140, 78, 135, 61, 1, 4, 5) // Popular leagues
                     }
 
-                    val otherLeagues = leagues.filter { league ->
-                        league.league?.id !in listOf(39, 2, 3, 140, 78, 135, 61, 1, 4, 5) &&
-                        league.seasons?.any { it.current == true } == true
-                    }.take(15) // Limit to prevent overwhelming
+                    val otherLeagues = allCurrentLeagues.filter { league ->
+                        league.league?.id !in listOf(39, 2, 3, 140, 78, 135, 61, 1, 4, 5)
+                    }
 
-                    println("🔥 DEBUG: SimpleLeaguesViewModel - Loaded ${leagues.size} total, ${priorityLeagues.size} priority, ${otherLeagues.size} other")
+                    println("🔥 DEBUG: SimpleLeaguesViewModel - Loaded ${leagues.size} total, ${allCurrentLeagues.size} with standings, ${priorityLeagues.size} priority, ${otherLeagues.size} other")
 
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,

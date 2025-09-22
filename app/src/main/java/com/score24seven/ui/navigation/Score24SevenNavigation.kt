@@ -20,6 +20,7 @@ import com.score24seven.ui.screen.NewLeaguesScreen
 import com.score24seven.ui.screen.ImprovedLeaguesScreen
 import com.score24seven.ui.screen.SettingsScreen
 import com.score24seven.ui.screen.LiveTvScreen
+import com.score24seven.ui.screen.LeagueDetailsScreen
 
 @Composable
 fun Score24SevenNavigation(
@@ -55,7 +56,11 @@ fun Score24SevenNavigation(
         }
 
         composable(Screen.Leagues.route) {
-            ImprovedLeaguesScreen()
+            ImprovedLeaguesScreen(
+                onNavigateToLeagueDetails = { leagueId, season, leagueName ->
+                    navController.navigate(Screen.LeagueDetail.createRoute(leagueId, season, leagueName))
+                }
+            )
         }
 
         composable(Screen.Settings.route) {
@@ -74,6 +79,25 @@ fun Score24SevenNavigation(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
+
+        composable(
+            route = Screen.LeagueDetail.route,
+            arguments = listOf(
+                navArgument("leagueId") { type = NavType.IntType },
+                navArgument("season") { type = NavType.IntType },
+                navArgument("leagueName") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val leagueId = backStackEntry.arguments?.getInt("leagueId") ?: return@composable
+            val season = backStackEntry.arguments?.getInt("season") ?: return@composable
+            val leagueName = backStackEntry.arguments?.getString("leagueName") ?: return@composable
+            LeagueDetailsScreen(
+                leagueId = leagueId,
+                season = season,
+                leagueName = leagueName.replace("-", "/"),
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
     }
 }
 
@@ -86,8 +110,8 @@ sealed class Screen(val route: String) {
     object MatchDetail : Screen("match_detail/{matchId}") {
         fun createRoute(matchId: Int) = "match_detail/$matchId"
     }
-    object LeagueDetail : Screen("league_detail/{leagueId}") {
-        fun createRoute(leagueId: Int) = "league_detail/$leagueId"
+    object LeagueDetail : Screen("league_detail/{leagueId}/{season}/{leagueName}") {
+        fun createRoute(leagueId: Int, season: Int, leagueName: String) = "league_detail/$leagueId/$season/${leagueName.replace("/", "-")}"
     }
     object TeamDetail : Screen("team_detail/{teamId}") {
         fun createRoute(teamId: Int) = "team_detail/$teamId"
