@@ -36,7 +36,8 @@ fun Score24SevenNavigation(
             HomeScreen(
                 onNavigateToMatchDetail = { matchId ->
                     navController.navigate(Screen.MatchDetail.createRoute(matchId))
-                }
+                },
+                navController = navController
             )
         }
 

@@ -59,6 +59,12 @@ android {
     }
 }
 
+kapt {
+    arguments {
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
+}
+
 dependencies {
     // Kotlin & Core
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"

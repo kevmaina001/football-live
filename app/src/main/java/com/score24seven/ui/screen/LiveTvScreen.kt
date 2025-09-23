@@ -110,14 +110,17 @@ fun LiveTvScreen(
 
 @Composable
 private fun LiveTvHeader() {
+    val liveColor = Color(0xFFE53E3E) // Consistent red color
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(Spacing.lg),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Red.copy(alpha = 0.1f)
-        )
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Row(
             modifier = Modifier
@@ -129,7 +132,7 @@ private fun LiveTvHeader() {
             Box(
                 modifier = Modifier
                     .size(12.dp)
-                    .background(Color.Red, RoundedCornerShape(6.dp))
+                    .background(liveColor, RoundedCornerShape(6.dp))
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -140,20 +143,20 @@ private fun LiveTvHeader() {
                         text = "🔴 LIVE TV",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 Text(
                     text = "All live football matches (favorites pinned)",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
             }
 
             Icon(
                 imageVector = Icons.Default.PlayArrow,
                 contentDescription = null,
-                tint = Color.Red,
+                tint = liveColor,
                 modifier = Modifier.size(32.dp)
             )
         }
@@ -201,15 +204,17 @@ private fun LeagueHeader(
     league: com.score24seven.domain.model.League,
     matchCount: Int
 ) {
+    val liveColor = Color(0xFFE53E3E) // Consistent red color
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = Spacing.xs),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Red.copy(alpha = 0.1f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
@@ -246,12 +251,12 @@ private fun LeagueHeader(
                         text = league.name,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = league.country,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
             }
@@ -259,7 +264,7 @@ private fun LeagueHeader(
             // Live match count badge
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.Red
+                    containerColor = liveColor
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
