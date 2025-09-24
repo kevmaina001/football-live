@@ -34,6 +34,8 @@ import coil.request.ImageRequest
 import com.score24seven.domain.model.*
 import com.score24seven.ui.state.UiState
 import com.score24seven.ui.state.TeamDetailState
+import com.score24seven.ui.state.TeamDetailTab
+import com.score24seven.ui.state.TeamDetailAction
 import com.score24seven.ui.viewmodel.TeamDetailViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -137,6 +139,7 @@ fun TeamDetailScreen(
                     TeamDetailContent(
                         team = teamState.data as Team,
                         state = state,
+                        onAction = viewModel::handleAction,
                         modifier = Modifier.padding(paddingValues)
                     )
                 }
@@ -149,146 +152,51 @@ fun TeamDetailScreen(
 private fun TeamDetailContent(
     team: Team,
     state: TeamDetailState,
+    onAction: (TeamDetailAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    Column(
+        modifier = modifier.fillMaxSize()
     ) {
         // Team Header
-        item {
-            TeamHeaderCard(team = team)
-        }
+        TeamHeaderCard(
+            team = team,
+            modifier = Modifier.padding(16.dp)
+        )
 
-        // Team Statistics
-        when (val statsState = state.statistics) {
-            is UiState.Success<*> -> {
-                item {
-                    TeamStatisticsCard(statistics = statsState.data as TeamStatistics)
-                }
-            }
-            is UiState.Loading -> {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                }
-            }
-            is UiState.Error -> {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
-                    ) {
-                        Text(
-                            text = "Error loading statistics",
-                            modifier = Modifier.padding(16.dp),
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                    }
-                }
+        // Tab Row
+        TabRow(
+            selectedTabIndex = state.selectedTab.ordinal,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            TeamDetailTab.values().forEach { tab ->
+                Tab(
+                    selected = state.selectedTab == tab,
+                    onClick = { onAction(TeamDetailAction.SelectTab(tab)) },
+                    text = { Text(tab.title) }
+                )
             }
         }
 
-        // Recent Fixtures
-        when (val fixturesState = state.fixtures) {
-            is UiState.Success<*> -> {
-                if ((fixturesState.data as List<Match>).isNotEmpty()) {
-                    item {
-                        Text(
-                            text = "Recent Fixtures",
-                            style = MaterialTheme.typography.headlineSmall.copy(
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    }
-                    items((fixturesState.data as List<Match>).take(5)) { match ->
-                        MatchCard(match = match)
-                    }
-                }
+        // Tab Content
+        when (state.selectedTab) {
+            TeamDetailTab.OVERVIEW -> {
+                TeamOverviewTab(team = team, state = state)
             }
-            is UiState.Loading -> {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(100.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                }
+            TeamDetailTab.FIXTURES -> {
+                TeamFixturesTab(state = state)
             }
-            else -> {} // Error state - skip fixtures section
-        }
-
-        // Players Section (if available)
-        when (val playersState = state.players) {
-            is UiState.Success<*> -> {
-                if ((playersState.data as List<Player>).isNotEmpty()) {
-                    item {
-                        Text(
-                            text = "Squad",
-                            style = MaterialTheme.typography.headlineSmall.copy(
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    }
-                    items((playersState.data as List<Player>).take(10)) { player ->
-                        PlayerCard(player = player)
-                    }
-                }
+            TeamDetailTab.PLAYERS -> {
+                TeamPlayersTab(state = state)
             }
-            is UiState.Loading -> {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(100.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                }
-            }
-            else -> {} // Error state - skip players section
         }
     }
 }
 
 @Composable
-private fun TeamHeaderCard(team: Team) {
+private fun TeamHeaderCard(team: Team, modifier: Modifier = Modifier) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
@@ -592,6 +500,321 @@ private fun PlayerCard(player: Player) {
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TeamOverviewTab(team: Team, state: TeamDetailState) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text(
+                text = "Team Information",
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold
+                )
+            )
+        }
+
+        // Basic team info
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    team.country?.let { country ->
+                        Text(
+                            text = "Country: $country",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    team.founded?.let { founded ->
+                        Text(
+                            text = "Founded: $founded",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    team.code?.let { code ->
+                        Text(
+                            text = "Code: $code",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            }
+        }
+
+        // Recent/Immediate fixtures preview (3 most recent/immediate matches)
+        when (val fixturesState = state.fixtures) {
+            is UiState.Success<*> -> {
+                val fixtures = fixturesState.data as List<Match>
+                if (fixtures.isNotEmpty()) {
+                    // Get the 3 most immediate fixtures (mix of recent played and upcoming)
+                    val now = System.currentTimeMillis() / 1000
+                    val recentPlayed = fixtures
+                        .filter { it.fixture.timestamp < now }
+                        .sortedByDescending { it.fixture.timestamp }
+                        .take(2) // Last 2 played matches
+
+                    val nextUpcoming = fixtures
+                        .filter { it.fixture.timestamp >= now }
+                        .sortedBy { it.fixture.timestamp }
+                        .take(2) // Next 2 upcoming matches
+
+                    val immediateFixtures = (recentPlayed + nextUpcoming).take(3)
+
+                    if (immediateFixtures.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Recent & Upcoming",
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
+                        items(immediateFixtures) { match ->
+                            MatchCard(match = match)
+                        }
+                    }
+                }
+            }
+            else -> {
+                item {
+                    Text(
+                        text = "Fixtures",
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Loading fixtures...")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun TeamFixturesTab(state: TeamDetailState) {
+    when (val fixturesState = state.fixtures) {
+        is UiState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        is UiState.Error -> {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Error loading fixtures",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = fixturesState.message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+        is UiState.Success<*> -> {
+            val fixtures = fixturesState.data as List<Match>
+            if (fixtures.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "No fixtures found",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Text(
+                        text = "This team has no recent fixtures for the current season",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                // Separate played and upcoming matches
+                val now = System.currentTimeMillis() / 1000
+                val playedMatches = fixtures.filter { it.fixture.timestamp < now }
+                val upcomingMatches = fixtures.filter { it.fixture.timestamp >= now }
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Upcoming Matches Section
+                    if (upcomingMatches.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Upcoming Fixtures (${upcomingMatches.size})",
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        }
+
+                        // Group upcoming matches by league
+                        val upcomingByLeague = upcomingMatches.groupBy { it.league.name }
+                        upcomingByLeague.forEach { (leagueName, matches) ->
+                            item {
+                                Text(
+                                    text = leagueName,
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.secondary
+                                    ),
+                                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                                )
+                            }
+                            items(matches) { match ->
+                                MatchCard(match = match)
+                            }
+                        }
+
+                        item { Spacer(modifier = Modifier.height(16.dp)) }
+                    }
+
+                    // Played Matches Section
+                    if (playedMatches.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Recent Results (${playedMatches.size})",
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
+
+                        // Group played matches by league
+                        val playedByLeague = playedMatches.reversed().groupBy { it.league.name }
+                        playedByLeague.forEach { (leagueName, matches) ->
+                            item {
+                                Text(
+                                    text = leagueName,
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.secondary
+                                    ),
+                                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                                )
+                            }
+                            items(matches) { match ->
+                                MatchCard(match = match)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TeamPlayersTab(state: TeamDetailState) {
+    when (val playersState = state.players) {
+        is UiState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        is UiState.Error -> {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Error loading players",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = playersState.message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+        is UiState.Success<*> -> {
+            val players = playersState.data as List<Player>
+            if (players.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "No players found",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Text(
+                        text = "Player information is not available for this team",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        Text(
+                            text = "Squad (${players.size} players)",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
+                    items(players) { player ->
+                        PlayerCard(player = player)
+                    }
                 }
             }
         }

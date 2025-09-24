@@ -12,15 +12,23 @@ data class TeamDetailState(
     val statistics: UiState<TeamStatistics> = UiState.Loading,
     val fixtures: UiState<List<Match>> = UiState.Loading,
     val players: UiState<List<Player>> = UiState.Loading,
+    val selectedTab: TeamDetailTab = TeamDetailTab.OVERVIEW,
     val isFavorite: Boolean = false,
     val isRefreshing: Boolean = false
 )
+
+enum class TeamDetailTab(val title: String) {
+    OVERVIEW("Overview"),
+    FIXTURES("Fixtures"),
+    PLAYERS("Players")
+}
 
 sealed class TeamDetailAction {
     data class LoadTeamDetails(val teamId: Int) : TeamDetailAction()
     data class LoadTeamStatistics(val teamId: Int, val leagueId: Int, val season: Int) : TeamDetailAction()
     data class LoadTeamFixtures(val teamId: Int, val season: Int) : TeamDetailAction()
     data class LoadTeamPlayers(val teamId: Int, val season: Int) : TeamDetailAction()
+    data class SelectTab(val tab: TeamDetailTab) : TeamDetailAction()
     object ToggleFavorite : TeamDetailAction()
     object ShareTeam : TeamDetailAction()
     object RefreshAll : TeamDetailAction()

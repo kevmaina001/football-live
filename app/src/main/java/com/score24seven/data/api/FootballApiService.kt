@@ -116,6 +116,12 @@ interface FootballApiService {
         @Query("page") page: Int = 1
     ): Response<ApiResponse<List<PlayerDto>>>
 
+    // Team squad
+    @GET("players/squads")
+    suspend fun getTeamSquads(
+        @Query("team") teamId: Int
+    ): Response<ApiResponse<List<SquadDto>>>
+
     // Top scorers
     @GET("players/topscorers")
     suspend fun getTopScorers(
@@ -488,4 +494,18 @@ data class LeagueDto(
     val flag: String?,
     val season: Int?,
     val round: String?
+)
+
+data class SquadDto(
+    val team: TeamDto,
+    val players: List<SquadPlayerDto>
+)
+
+data class SquadPlayerDto(
+    val id: Int,
+    val name: String,
+    val age: Int?,
+    val number: Int?,
+    val position: String?,
+    val photo: String?
 )
