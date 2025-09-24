@@ -245,4 +245,94 @@ interface MatchDao {
 
     @Query("UPDATE matches SET isLive = 0")
     suspend fun setAllMatchesNotLive()
+
+    // Match Events Operations
+    @Query("SELECT * FROM match_events WHERE matchId = :matchId ORDER BY timeElapsed ASC, timeExtra ASC")
+    fun getMatchEvents(matchId: Int): Flow<List<MatchEventEntity>>
+
+    @Query("SELECT * FROM match_events WHERE matchId = :matchId ORDER BY timeElapsed ASC, timeExtra ASC")
+    suspend fun getMatchEventsList(matchId: Int): List<MatchEventEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMatchEvents(events: List<MatchEventEntity>)
+
+    @Query("DELETE FROM match_events WHERE matchId = :matchId")
+    suspend fun deleteMatchEvents(matchId: Int)
+
+    @Query("UPDATE matches SET hasEvents = :hasEvents WHERE id = :matchId")
+    suspend fun updateMatchEventsFlag(matchId: Int, hasEvents: Boolean)
+
+    // Match Lineups Operations
+    @Query("SELECT * FROM match_lineups WHERE matchId = :matchId ORDER BY isStarting DESC, playerNumber ASC")
+    fun getMatchLineups(matchId: Int): Flow<List<MatchLineupEntity>>
+
+    @Query("SELECT * FROM match_lineups WHERE matchId = :matchId ORDER BY isStarting DESC, playerNumber ASC")
+    suspend fun getMatchLineupsList(matchId: Int): List<MatchLineupEntity>
+
+    @Query("SELECT * FROM match_lineups WHERE matchId = :matchId AND teamId = :teamId ORDER BY isStarting DESC, playerNumber ASC")
+    suspend fun getTeamLineup(matchId: Int, teamId: Int): List<MatchLineupEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMatchLineups(lineups: List<MatchLineupEntity>)
+
+    @Query("DELETE FROM match_lineups WHERE matchId = :matchId")
+    suspend fun deleteMatchLineups(matchId: Int)
+
+    @Query("UPDATE matches SET hasLineups = :hasLineups WHERE id = :matchId")
+    suspend fun updateMatchLineupsFlag(matchId: Int, hasLineups: Boolean)
+
+    // Match Statistics Operations
+    @Query("SELECT * FROM match_statistics WHERE matchId = :matchId ORDER BY teamId ASC")
+    fun getMatchStatistics(matchId: Int): Flow<List<MatchStatisticsEntity>>
+
+    @Query("SELECT * FROM match_statistics WHERE matchId = :matchId ORDER BY teamId ASC")
+    suspend fun getMatchStatisticsList(matchId: Int): List<MatchStatisticsEntity>
+
+    @Query("SELECT * FROM match_statistics WHERE matchId = :matchId AND teamId = :teamId")
+    suspend fun getTeamStatistics(matchId: Int, teamId: Int): List<MatchStatisticsEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMatchStatistics(statistics: List<MatchStatisticsEntity>)
+
+    @Query("DELETE FROM match_statistics WHERE matchId = :matchId")
+    suspend fun deleteMatchStatistics(matchId: Int)
+
+    @Query("UPDATE matches SET hasStatistics = :hasStatistics WHERE id = :matchId")
+    suspend fun updateMatchStatisticsFlag(matchId: Int, hasStatistics: Boolean)
+
+    // Combined operations for match details
+    @Transaction
+    suspend fun insertMatchDetails(
+        matchId: Int,
+        events: List<MatchEventEntity>? = null,
+        lineups: List<MatchLineupEntity>? = null,
+        statistics: List<MatchStatisticsEntity>? = null
+    ) {
+        events?.let {
+            deleteMatchEvents(matchId)
+            insertMatchEvents(it)
+            updateMatchEventsFlag(matchId, it.isNotEmpty())
+        }
+
+        lineups?.let {
+            deleteMatchLineups(matchId)
+            insertMatchLineups(it)
+            updateMatchLineupsFlag(matchId, it.isNotEmpty())
+        }
+
+        statistics?.let {
+            deleteMatchStatistics(matchId)
+            insertMatchStatistics(it)
+            updateMatchStatisticsFlag(matchId, it.isNotEmpty())
+        }
+    }
+
+    @Query("SELECT COUNT(*) FROM match_events WHERE matchId = :matchId")
+    suspend fun getEventsCount(matchId: Int): Int
+
+    @Query("SELECT COUNT(*) FROM match_lineups WHERE matchId = :matchId")
+    suspend fun getLineupsCount(matchId: Int): Int
+
+    @Query("SELECT COUNT(*) FROM match_statistics WHERE matchId = :matchId")
+    suspend fun getStatisticsCount(matchId: Int): Int
 }

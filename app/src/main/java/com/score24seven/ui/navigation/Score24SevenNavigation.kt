@@ -13,7 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import com.score24seven.ui.screen.HomeScreen
-import com.score24seven.ui.screen.MatchDetailScreen
+import com.score24seven.ui.screen.NewMatchDetailScreen
 import com.score24seven.ui.screen.MatchesScreen
 import com.score24seven.ui.screen.LeaguesScreen
 import com.score24seven.ui.screen.NewLeaguesScreen
@@ -21,6 +21,7 @@ import com.score24seven.ui.screen.ImprovedLeaguesScreen
 import com.score24seven.ui.screen.SettingsScreen
 import com.score24seven.ui.screen.LiveTvScreen
 import com.score24seven.ui.screen.LeagueDetailsScreen
+import com.score24seven.ui.screen.TeamDetailScreen
 
 @Composable
 fun Score24SevenNavigation(
@@ -53,7 +54,11 @@ fun Score24SevenNavigation(
         }
 
         composable(Screen.LiveTV.route) {
-            LiveTvScreen()
+            LiveTvScreen(
+                onMatchClick = { match ->
+                    navController.navigate(Screen.MatchDetail.createRoute(match.id))
+                }
+            )
         }
 
         composable(Screen.Leagues.route) {
@@ -75,9 +80,12 @@ fun Score24SevenNavigation(
             )
         ) { backStackEntry ->
             val matchId = backStackEntry.arguments?.getInt("matchId") ?: return@composable
-            MatchDetailScreen(
+            NewMatchDetailScreen(
                 matchId = matchId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToTeamDetail = { teamId ->
+                    navController.navigate(Screen.TeamDetail.createRoute(teamId))
+                }
             )
         }
 
@@ -96,6 +104,19 @@ fun Score24SevenNavigation(
                 leagueId = leagueId,
                 season = season,
                 leagueName = leagueName.replace("-", "/"),
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.TeamDetail.route,
+            arguments = listOf(
+                navArgument("teamId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val teamId = backStackEntry.arguments?.getInt("teamId") ?: return@composable
+            TeamDetailScreen(
+                teamId = teamId,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

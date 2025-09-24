@@ -92,8 +92,9 @@ class LiveMatchDetailViewModel @Inject constructor(
         val matchId = currentMatchId ?: return
 
         when (tab) {
-            MatchDetailTab.EVENTS -> {
-                loadMatchEvents(matchId)
+            MatchDetailTab.FIXTURES -> {
+                // Fixtures functionality not implemented for live matches yet
+                // TODO: Implement fixtures loading for live matches
             }
             MatchDetailTab.LINEUPS -> {
                 loadMatchLineups(matchId)

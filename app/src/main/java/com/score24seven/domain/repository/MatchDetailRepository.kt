@@ -5,19 +5,19 @@
 
 package com.score24seven.domain.repository
 
-import com.score24seven.data.api.EventDto
-import com.score24seven.data.api.LineupDto
 import com.score24seven.data.api.PredictionDto
-import com.score24seven.data.api.StatisticsDto
 import com.score24seven.data.dto.MatchDto
+import com.score24seven.domain.model.*
 import com.score24seven.domain.util.Resource
 import kotlinx.coroutines.flow.Flow
 
 interface MatchDetailRepository {
     fun getMatchPredictions(fixtureId: Int): Flow<Resource<List<PredictionDto>>>
-    fun getMatchLineups(fixtureId: Int): Flow<Resource<List<LineupDto>>>
-    fun getMatchStatistics(fixtureId: Int): Flow<Resource<List<StatisticsDto>>>
-    fun getMatchEvents(fixtureId: Int): Flow<Resource<List<EventDto>>>
-    fun getHeadToHead(homeTeamId: Int, awayTeamId: Int): Flow<Resource<List<MatchDto>>>
-    fun getLeagueMatches(leagueId: Int, season: Int): Flow<Resource<List<MatchDto>>>
+    fun getMatchLineups(fixtureId: Int): Flow<Resource<List<Lineup>>>
+    fun getMatchStatistics(fixtureId: Int): Flow<Resource<List<MatchStatistic>>>
+    fun getMatchEvents(fixtureId: Int): Flow<Resource<List<MatchEvent>>>
+    fun getHeadToHead(homeTeamId: Int, awayTeamId: Int): Flow<Resource<List<Match>>>
+    fun getLeagueMatches(leagueId: Int, season: Int): Flow<Resource<List<Match>>>
+    fun getLeagueStandings(leagueId: Int, season: Int): Flow<Resource<List<Standing>>>
+    fun getTeamFixtures(teamId: Int, season: Int, limit: Int = 5): Flow<Resource<List<Match>>>
 }

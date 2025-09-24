@@ -6,7 +6,9 @@
 package com.score24seven.ui.design.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -40,10 +43,19 @@ fun TeamRow(
     logoResId: Int? = null,
     isHome: Boolean = true,
     subtitle: String? = null,
-    compact: Boolean = false
+    compact: Boolean = false,
+    onClick: (() -> Unit)? = null
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable { onClick() }
+                } else {
+                    Modifier
+                }
+            ),
         horizontalArrangement = if (isHome) Arrangement.Start else Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -119,6 +131,36 @@ private fun TeamLogo(
             TeamInitialsLogo(
                 teamName = teamName,
                 size = size
+            )
+        }
+    }
+}
+
+@Composable
+private fun TeamInitialsLogo(
+    teamName: String,
+    size: androidx.compose.ui.unit.Dp
+) {
+    val initials = teamName.split(" ")
+        .take(2)
+        .map { it.firstOrNull()?.uppercase() ?: "" }
+        .joinToString("")
+        .take(2)
+
+    Surface(
+        modifier = Modifier.size(size),
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primary
+    ) {
+        Box(
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = initials,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
             )
         }
     }

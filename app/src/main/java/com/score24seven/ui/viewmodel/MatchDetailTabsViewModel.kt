@@ -7,11 +7,8 @@ package com.score24seven.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.score24seven.data.api.EventDto
-import com.score24seven.data.api.LineupDto
 import com.score24seven.data.api.PredictionDto
-import com.score24seven.data.api.StatisticsDto
-import com.score24seven.data.dto.MatchDto
+import com.score24seven.domain.model.*
 import com.score24seven.domain.repository.MatchDetailRepository
 import com.score24seven.domain.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,20 +26,20 @@ class MatchDetailTabsViewModel @Inject constructor(
     private val _predictionsState = MutableStateFlow<Resource<List<PredictionDto>>>(Resource.Loading())
     val predictionsState: StateFlow<Resource<List<PredictionDto>>> = _predictionsState.asStateFlow()
 
-    private val _lineupsState = MutableStateFlow<Resource<List<LineupDto>>>(Resource.Loading())
-    val lineupsState: StateFlow<Resource<List<LineupDto>>> = _lineupsState.asStateFlow()
+    private val _lineupsState = MutableStateFlow<Resource<List<Lineup>>>(Resource.Loading())
+    val lineupsState: StateFlow<Resource<List<Lineup>>> = _lineupsState.asStateFlow()
 
-    private val _statisticsState = MutableStateFlow<Resource<List<StatisticsDto>>>(Resource.Loading())
-    val statisticsState: StateFlow<Resource<List<StatisticsDto>>> = _statisticsState.asStateFlow()
+    private val _statisticsState = MutableStateFlow<Resource<List<MatchStatistic>>>(Resource.Loading())
+    val statisticsState: StateFlow<Resource<List<MatchStatistic>>> = _statisticsState.asStateFlow()
 
-    private val _eventsState = MutableStateFlow<Resource<List<EventDto>>>(Resource.Loading())
-    val eventsState: StateFlow<Resource<List<EventDto>>> = _eventsState.asStateFlow()
+    private val _eventsState = MutableStateFlow<Resource<List<MatchEvent>>>(Resource.Loading())
+    val eventsState: StateFlow<Resource<List<MatchEvent>>> = _eventsState.asStateFlow()
 
-    private val _headToHeadState = MutableStateFlow<Resource<List<MatchDto>>>(Resource.Loading())
-    val headToHeadState: StateFlow<Resource<List<MatchDto>>> = _headToHeadState.asStateFlow()
+    private val _headToHeadState = MutableStateFlow<Resource<List<Match>>>(Resource.Loading())
+    val headToHeadState: StateFlow<Resource<List<Match>>> = _headToHeadState.asStateFlow()
 
-    private val _leagueMatchesState = MutableStateFlow<Resource<List<MatchDto>>>(Resource.Loading())
-    val leagueMatchesState: StateFlow<Resource<List<MatchDto>>> = _leagueMatchesState.asStateFlow()
+    private val _leagueMatchesState = MutableStateFlow<Resource<List<Match>>>(Resource.Loading())
+    val leagueMatchesState: StateFlow<Resource<List<Match>>> = _leagueMatchesState.asStateFlow()
 
     fun loadPredictions(fixtureId: Int) {
         viewModelScope.launch {

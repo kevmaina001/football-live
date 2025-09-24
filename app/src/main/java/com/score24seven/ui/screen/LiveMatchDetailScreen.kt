@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.score24seven.domain.usecase.*
+import com.score24seven.domain.model.TeamStatistics
 import com.score24seven.ui.components.ErrorState
 import com.score24seven.ui.components.LoadingState
 import com.score24seven.ui.design.components.TeamRow
@@ -191,8 +192,8 @@ private fun LiveMatchDetailContent(
                 MatchDetailTab.OVERVIEW -> {
                     LiveOverviewTab(match)
                 }
-                MatchDetailTab.EVENTS -> {
-                    PlaceholderTab("Match Events", "Live events will appear here during the match")
+                MatchDetailTab.FIXTURES -> {
+                    PlaceholderTab("League Fixtures", "Previous and upcoming fixtures will appear here")
                 }
                 MatchDetailTab.LINEUPS -> {
                     PlaceholderTab("Team Lineups", "Starting lineups and formations will be displayed here")
@@ -641,14 +642,72 @@ private fun LiveStatisticsTab(statistics: UiState<List<TeamStatistics>>) {
                 ) {
                     val homeStats = statistics.data[0]
                     val awayStats = statistics.data[1]
-                    val statKeys = homeStats.statistics.keys.intersect(awayStats.statistics.keys)
 
-                    items(statKeys.toList()) { statKey ->
+                    // Display key statistics
+                    item {
                         StatisticComparisonRow(
-                            statName = statKey,
-                            homeValue = homeStats.statistics[statKey] ?: "0",
-                            awayValue = awayStats.statistics[statKey] ?: "0"
+                            statName = "Games Played",
+                            homeValue = homeStats.fixtures.played.total?.toString() ?: "0",
+                            awayValue = awayStats.fixtures.played.total?.toString() ?: "0"
                         )
+                    }
+
+                    item {
+                        StatisticComparisonRow(
+                            statName = "Wins",
+                            homeValue = homeStats.fixtures.wins.total?.toString() ?: "0",
+                            awayValue = awayStats.fixtures.wins.total?.toString() ?: "0"
+                        )
+                    }
+
+                    item {
+                        StatisticComparisonRow(
+                            statName = "Draws",
+                            homeValue = homeStats.fixtures.draws.total?.toString() ?: "0",
+                            awayValue = awayStats.fixtures.draws.total?.toString() ?: "0"
+                        )
+                    }
+
+                    item {
+                        StatisticComparisonRow(
+                            statName = "Losses",
+                            homeValue = homeStats.fixtures.loses.total?.toString() ?: "0",
+                            awayValue = awayStats.fixtures.loses.total?.toString() ?: "0"
+                        )
+                    }
+
+                    item {
+                        StatisticComparisonRow(
+                            statName = "Goals For",
+                            homeValue = homeStats.goals.goalsFor.total?.toString() ?: "0",
+                            awayValue = awayStats.goals.goalsFor.total?.toString() ?: "0"
+                        )
+                    }
+
+                    item {
+                        StatisticComparisonRow(
+                            statName = "Goals Against",
+                            homeValue = homeStats.goals.goalsAgainst.total?.toString() ?: "0",
+                            awayValue = awayStats.goals.goalsAgainst.total?.toString() ?: "0"
+                        )
+                    }
+
+                    item {
+                        StatisticComparisonRow(
+                            statName = "Clean Sheets",
+                            homeValue = homeStats.cleanSheet.total?.toString() ?: "0",
+                            awayValue = awayStats.cleanSheet.total?.toString() ?: "0"
+                        )
+                    }
+
+                    if (homeStats.form.isNotEmpty() && awayStats.form.isNotEmpty()) {
+                        item {
+                            StatisticComparisonRow(
+                                statName = "Form",
+                                homeValue = homeStats.form,
+                                awayValue = awayStats.form
+                            )
+                        }
                     }
                 }
             }

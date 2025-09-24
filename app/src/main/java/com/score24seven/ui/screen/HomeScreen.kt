@@ -539,42 +539,6 @@ fun LiveMatchesCarousel(
     }
 }
 
-// Featured Matches Preview
-@Composable
-fun FeaturedMatchesPreview(
-    matches: List<Match>,
-    onMatchClick: (Int) -> Unit
-) {
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "⭐ Featured Matches",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-            TextButton(onClick = { }) {
-                Text("View All")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            matches.forEach { match ->
-                FeaturedMatchCard(
-                    match = match,
-                    onClick = { onMatchClick(match.id) }
-                )
-            }
-        }
-    }
-}
 
 // Compact match card for carousel
 @Composable
@@ -991,6 +955,53 @@ fun RealMatchCard(
                         size = 24.dp
                     )
                 }
+            }
+        }
+    }
+}
+
+// Featured Matches Preview
+@Composable
+fun FeaturedMatchesPreview(
+    matches: List<Match>,
+    onMatchClick: (Int) -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "⭐ Featured Matches",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            TextButton(
+                onClick = { /* Navigate to matches screen */ }
+            ) {
+                Text(
+                    text = "View All",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.height(300.dp) // Fixed height for preview
+        ) {
+            items(matches) { match ->
+                CompactMatchCard(
+                    match = match,
+                    onClick = { onMatchClick(match.id) }
+                )
             }
         }
     }

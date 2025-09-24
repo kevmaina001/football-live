@@ -37,6 +37,7 @@ import com.score24seven.util.Config
 @Composable
 fun LiveTvScreen(
     modifier: Modifier = Modifier,
+    onMatchClick: (Match) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -87,7 +88,7 @@ fun LiveTvScreen(
                 } else {
                     LiveMatchesList(
                         matches = sortedMatches,
-                        onMatchClick = { /* TODO: Navigate to match detail */ }
+                        onMatchClick = onMatchClick
                     )
                 }
             }
