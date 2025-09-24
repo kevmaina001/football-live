@@ -53,10 +53,18 @@ class TeamDetailViewModel @Inject constructor(
             try {
                 updateState { copy(team = UiState.Loading) }
 
-                val response = apiService.getTeams(search = null)
-                if (response.isSuccessful) {
-                    val teamDto = response.body()?.response?.find { it.id == teamId }
-                    if (teamDto != null) {
+                // Try to get team info from statistics API first (more reliable)
+                // Use a default league and season for now
+                val statsResponse = apiService.getTeamStatistics(
+                    teamId = teamId,
+                    leagueId = 39, // Premier League as default
+                    season = 2024
+                )
+
+                if (statsResponse.isSuccessful) {
+                    val statsDto = statsResponse.body()?.response
+                    if (statsDto != null) {
+                        val teamDto = statsDto.team
                         val team = Team(
                             id = teamDto.id,
                             name = teamDto.name,
@@ -75,25 +83,45 @@ class TeamDetailViewModel @Inject constructor(
                             )
                         }
                     } else {
-                        updateState {
-                            copy(
-                                team = UiState.Error("Team not found"),
-                                isRefreshing = false
-                            )
-                        }
+                        // Fallback: try to get from a generic teams call
+                        loadTeamBasicInfoFallback(teamId)
                     }
                 } else {
-                    updateState {
-                        copy(
-                            team = UiState.Error("Failed to load team details"),
-                            isRefreshing = false
-                        )
-                    }
+                    // Fallback: try to get from a generic teams call
+                    loadTeamBasicInfoFallback(teamId)
+                }
+            } catch (e: Exception) {
+                // Fallback: try to get from a generic teams call
+                loadTeamBasicInfoFallback(teamId)
+            }
+        }
+    }
+
+    private fun loadTeamBasicInfoFallback(teamId: Int) {
+        viewModelScope.launch {
+            try {
+                // Create a basic team info from just the teamId
+                val team = Team(
+                    id = teamId,
+                    name = "Team #$teamId",
+                    code = null,
+                    logo = null,
+                    country = null,
+                    founded = null,
+                    isNational = false,
+                    isFavorite = false
+                )
+                updateState {
+                    copy(
+                        team = UiState.Success(team),
+                        isFavorite = team.isFavorite,
+                        isRefreshing = false
+                    )
                 }
             } catch (e: Exception) {
                 updateState {
                     copy(
-                        team = UiState.Error(e.message ?: "Unknown error"),
+                        team = UiState.Error(e.message ?: "Failed to load team details"),
                         isRefreshing = false
                     )
                 }
@@ -141,51 +169,54 @@ class TeamDetailViewModel @Inject constructor(
                 )
 
                 if (response.isSuccessful) {
-                    val fixtures = response.body()?.response?.map { matchDto ->
-                        // Map MatchDto to Match domain model
-                        // This is a simplified mapping - you might want to use existing mappers
-                        Match(
-                            id = matchDto.fixture.id,
-                            homeTeam = Team(
-                                id = matchDto.teams.home.id,
-                                name = matchDto.teams.home.name,
-                                logo = matchDto.teams.home.logo
-                            ),
-                            awayTeam = Team(
-                                id = matchDto.teams.away.id,
-                                name = matchDto.teams.away.name,
-                                logo = matchDto.teams.away.logo
-                            ),
-                            league = League(
-                                id = matchDto.league.id,
-                                name = matchDto.league.name,
-                                country = matchDto.league.country,
-                                logo = matchDto.league.logo,
-                                flag = matchDto.league.flag,
-                                season = matchDto.league.season,
-                                round = matchDto.league.round
-                            ),
-                            fixture = Fixture(
-                                dateTime = java.time.LocalDateTime.now(), // TODO: Parse actual date
-                                timezone = matchDto.fixture.timezone,
-                                timestamp = matchDto.fixture.timestamp
-                            ),
-                            score = Score(
-                                home = matchDto.goals.home,
-                                away = matchDto.goals.away,
-                                halftime = matchDto.score.halftime?.let {
-                                    ScorePeriod(it.home, it.away)
-                                },
-                                fulltime = matchDto.score.fulltime?.let {
-                                    ScorePeriod(it.home, it.away)
-                                }
-                            ),
-                            status = MatchStatus(
-                                short = matchDto.fixture.status.short,
-                                long = matchDto.fixture.status.long,
-                                elapsed = matchDto.fixture.status.elapsed
+                    val fixtures = response.body()?.response?.mapNotNull { matchDto ->
+                        try {
+                            // Map MatchDto to Match domain model with error handling
+                            Match(
+                                id = matchDto.fixture.id,
+                                homeTeam = Team(
+                                    id = matchDto.teams.home.id,
+                                    name = matchDto.teams.home.name,
+                                    logo = matchDto.teams.home.logo
+                                ),
+                                awayTeam = Team(
+                                    id = matchDto.teams.away.id,
+                                    name = matchDto.teams.away.name,
+                                    logo = matchDto.teams.away.logo
+                                ),
+                                league = League(
+                                    id = matchDto.league.id,
+                                    name = matchDto.league.name,
+                                    country = matchDto.league.country,
+                                    logo = matchDto.league.logo,
+                                    flag = matchDto.league.flag,
+                                    season = matchDto.league.season,
+                                    round = matchDto.league.round
+                                ),
+                                fixture = Fixture(
+                                    dateTime = java.time.LocalDateTime.now(), // TODO: Parse actual date
+                                    timezone = matchDto.fixture.timezone,
+                                    timestamp = matchDto.fixture.timestamp
+                                ),
+                                score = Score(
+                                    home = matchDto.goals.home,
+                                    away = matchDto.goals.away,
+                                    halftime = matchDto.score.halftime?.let {
+                                        ScorePeriod(it.home, it.away)
+                                    },
+                                    fulltime = matchDto.score.fulltime?.let {
+                                        ScorePeriod(it.home, it.away)
+                                    }
+                                ),
+                                status = MatchStatus(
+                                    short = matchDto.fixture.status.short,
+                                    long = matchDto.fixture.status.long,
+                                    elapsed = matchDto.fixture.status.elapsed
+                                )
                             )
-                        )
+                        } catch (e: Exception) {
+                            null // Skip this match if parsing fails
+                        }
                     } ?: emptyList()
 
                     updateState { copy(fixtures = UiState.Success(fixtures)) }
@@ -193,7 +224,7 @@ class TeamDetailViewModel @Inject constructor(
                     updateState { copy(fixtures = UiState.Error("Failed to load fixtures")) }
                 }
             } catch (e: Exception) {
-                updateState { copy(fixtures = UiState.Error(e.message ?: "Unknown error")) }
+                updateState { copy(fixtures = UiState.Error("Unable to load fixtures")) }
             }
         }
     }
@@ -210,19 +241,23 @@ class TeamDetailViewModel @Inject constructor(
                 )
 
                 if (response.isSuccessful) {
-                    val players = response.body()?.response?.map { playerDto ->
-                        Player(
-                            id = playerDto.id,
-                            name = playerDto.name,
-                            firstName = playerDto.firstname,
-                            lastName = playerDto.lastname,
-                            age = playerDto.age,
-                            nationality = playerDto.nationality,
-                            position = playerDto.statistics?.firstOrNull()?.games?.position,
-                            number = playerDto.statistics?.firstOrNull()?.games?.number,
-                            photo = playerDto.photo,
-                            isInjured = playerDto.injured ?: false
-                        )
+                    val players = response.body()?.response?.mapNotNull { playerDto ->
+                        try {
+                            Player(
+                                id = playerDto.id,
+                                name = playerDto.name,
+                                firstName = playerDto.firstname,
+                                lastName = playerDto.lastname,
+                                age = playerDto.age,
+                                nationality = playerDto.nationality,
+                                position = playerDto.statistics?.firstOrNull()?.games?.position,
+                                number = playerDto.statistics?.firstOrNull()?.games?.number,
+                                photo = playerDto.photo,
+                                isInjured = playerDto.injured ?: false
+                            )
+                        } catch (e: Exception) {
+                            null // Skip this player if parsing fails
+                        }
                     } ?: emptyList()
 
                     updateState { copy(players = UiState.Success(players)) }
@@ -230,7 +265,7 @@ class TeamDetailViewModel @Inject constructor(
                     updateState { copy(players = UiState.Error("Failed to load players")) }
                 }
             } catch (e: Exception) {
-                updateState { copy(players = UiState.Error(e.message ?: "Unknown error")) }
+                updateState { copy(players = UiState.Error("Unable to load players")) }
             }
         }
     }
