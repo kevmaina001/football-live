@@ -32,9 +32,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.score24seven.domain.model.Match
 import com.score24seven.domain.model.Team
+import com.score24seven.domain.model.League
 import com.score24seven.domain.model.getTimeDisplay
 import com.score24seven.domain.model.isLive
 import com.score24seven.ui.components.TeamLogo
+import com.score24seven.ui.components.LeagueLogo
 import com.score24seven.ui.viewmodel.SearchViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -236,7 +238,7 @@ fun SearchScreen(
                     }
                 }
             }
-            searchResults.matches.isEmpty() && searchResults.teams.isEmpty() -> {
+            searchResults.matches.isEmpty() && searchResults.teams.isEmpty() && searchResults.leagues.isEmpty() -> {
                 // No results
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -275,6 +277,27 @@ fun SearchScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // Leagues Section
+                    if (searchResults.leagues.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Leagues (${searchResults.leagues.size})",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1976D2)
+                            )
+                        }
+                        items(searchResults.leagues) { league ->
+                            LeagueSearchCard(
+                                league = league,
+                                onClick = { /* Navigate to league details */ }
+                            )
+                        }
+                        item {
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+
                     // Teams Section
                     if (searchResults.teams.isNotEmpty()) {
                         item {
@@ -482,6 +505,53 @@ private fun MatchSearchCard(
                 text = match.getTimeDisplay(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun LeagueSearchCard(
+    league: League,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            LeagueLogo(
+                logoUrl = league.logo,
+                leagueName = league.name,
+                size = 48.dp
+            )
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = league.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = league.country,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Icon(
+                imageVector = Icons.Default.ArrowForward,
+                contentDescription = "View league",
+                tint = MaterialTheme.colorScheme.primary
             )
         }
     }

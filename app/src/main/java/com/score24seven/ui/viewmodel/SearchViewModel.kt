@@ -9,12 +9,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.score24seven.domain.model.Match
 import com.score24seven.domain.model.Team
+import com.score24seven.domain.model.League
 import com.score24seven.domain.repository.MatchRepository
+import com.score24seven.domain.util.Resource
 import com.score24seven.ui.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
 
 @OptIn(FlowPreview::class)
@@ -72,26 +76,41 @@ class SearchViewModel @Inject constructor(
     private suspend fun performSearch(query: String): SearchResults {
         val lowerQuery = query.lowercase()
 
-        return try {
-            // Get all matches from today
-            val todayMatchesResult = matchRepository.getTodayMatches()
+        try {
+            // Use the repository's search function
+            var searchError: String? = null
+            val allMatches = mutableListOf<Match>()
 
-            val matches = when (todayMatchesResult) {
-                is UiState.Success<*> -> {
-                    @Suppress("UNCHECKED_CAST")
-                    val matchList = todayMatchesResult.data as? List<Match> ?: emptyList()
-                    matchList.filter { match ->
-                        match.homeTeam.name.lowercase().contains(lowerQuery) ||
-                        match.awayTeam.name.lowercase().contains(lowerQuery) ||
-                        match.league.name.lowercase().contains(lowerQuery)
+            // Collect search results
+            matchRepository.searchMatches(query).collect { resource ->
+                when (resource) {
+                    is Resource.Success -> {
+                        allMatches.addAll(resource.data ?: emptyList())
                     }
+                    is Resource.Error -> {
+                        searchError = resource.message
+                    }
+                    else -> {}
                 }
-                else -> emptyList()
             }
 
-            // Extract unique teams from matches
+            // If there was an error, return it
+            if (searchError != null) {
+                return SearchResults(error = searchError)
+            }
+
+            // Filter matches by query (additional client-side filtering for better results)
+            val filteredMatches = allMatches
+                .distinctBy { it.id }
+                .filter { match ->
+                    match.homeTeam.name.lowercase().contains(lowerQuery) ||
+                    match.awayTeam.name.lowercase().contains(lowerQuery) ||
+                    match.league.name.lowercase().contains(lowerQuery)
+                }
+
+            // Extract unique teams from filtered matches
             val teams = mutableListOf<Team>()
-            matches.forEach { match ->
+            filteredMatches.forEach { match ->
                 if (match.homeTeam.name.lowercase().contains(lowerQuery)) {
                     teams.add(match.homeTeam)
                 }
@@ -100,12 +119,22 @@ class SearchViewModel @Inject constructor(
                 }
             }
 
-            SearchResults(
-                matches = matches,
-                teams = teams.distinctBy { it.id }
+            // Extract unique leagues from all matches
+            val leagues = allMatches
+                .map { it.league }
+                .distinctBy { it.id }
+                .filter { league ->
+                    league.name.lowercase().contains(lowerQuery) ||
+                    league.country.lowercase().contains(lowerQuery)
+                }
+
+            return SearchResults(
+                matches = filteredMatches,
+                teams = teams.distinctBy { it.id },
+                leagues = leagues
             )
         } catch (e: Exception) {
-            SearchResults(error = e.message)
+            return SearchResults(error = e.message)
         }
     }
 }
@@ -113,5 +142,6 @@ class SearchViewModel @Inject constructor(
 data class SearchResults(
     val matches: List<Match> = emptyList(),
     val teams: List<Team> = emptyList(),
+    val leagues: List<League> = emptyList(),
     val error: String? = null
 )

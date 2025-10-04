@@ -45,7 +45,8 @@ import java.time.LocalDate
 fun MatchesScreen(
     onNavigateBack: () -> Unit,
     onNavigateToMatchDetail: (Int) -> Unit,
-    viewModel: MatchesViewModel = hiltViewModel()
+    viewModel: MatchesViewModel = hiltViewModel(),
+    onNavigateToSearch: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -79,7 +80,7 @@ fun MatchesScreen(
                 }
             },
             actions = {
-                IconButton(onClick = { /* Search */ }) {
+                IconButton(onClick = onNavigateToSearch) {
                     Icon(
                         painter = painterResource(android.R.drawable.ic_menu_search),
                         contentDescription = "Search"

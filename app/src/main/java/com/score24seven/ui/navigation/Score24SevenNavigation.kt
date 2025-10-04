@@ -51,7 +51,8 @@ fun Score24SevenNavigation(
                 },
                 onNavigateToMatchDetail = { matchId ->
                     navController.navigate(Screen.MatchDetail.createRoute(matchId))
-                }
+                },
+                onNavigateToSearch = { navController.navigate(Screen.Search.route) },
             )
         }
 
