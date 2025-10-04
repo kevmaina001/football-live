@@ -41,7 +41,6 @@ import com.score24seven.ui.state.HomeScreenEffect
 import com.score24seven.ui.state.UiState
 import com.score24seven.ui.viewmodel.HomeViewModel
 import com.score24seven.ui.components.TeamLogo
-import com.score24seven.ui.components.FavoriteMatchesSection
 import com.score24seven.ui.navigation.Screen
 import com.score24seven.util.Config
 
@@ -80,7 +79,8 @@ fun HomeScreen(
         // Hero Section
         item {
             HeroSection(
-                onRefresh = { viewModel.handleAction(HomeScreenAction.RefreshData) }
+                onRefresh = { viewModel.handleAction(HomeScreenAction.RefreshData) },
+                onNavigateToSettings = { navController?.navigate(Screen.Settings.route) }
             )
         }
 
@@ -108,37 +108,6 @@ fun HomeScreen(
             )
         }
 
-        // Favorite Matches Section
-        when (val favoriteMatchesState = state.favoriteMatches) {
-            is UiState.Loading -> {
-                item {
-                    LoadingCard("Loading favorite matches...")
-                }
-            }
-            is UiState.Success -> {
-                val favoriteMatches = favoriteMatchesState.data
-                if (favoriteMatches.isNotEmpty()) {
-                    item {
-                        FavoriteMatchesSection(
-                            matches = favoriteMatches,
-                            onMatchClick = onNavigateToMatchDetail,
-                            onToggleFavorite = { matchId ->
-                                viewModel.handleAction(HomeScreenAction.ToggleMatchFavorite(matchId))
-                            }
-                        )
-                    }
-                }
-            }
-            is UiState.Error -> {
-                item {
-                    ErrorCard(
-                        title = "Favorite Matches Unavailable",
-                        message = favoriteMatchesState.message ?: "Unable to load favorite matches",
-                        onRetry = { viewModel.handleAction(HomeScreenAction.RefreshData) }
-                    )
-                }
-            }
-        }
 
         // Live Matches Carousel
         when (val liveMatchesState = state.liveMatches) {
@@ -209,7 +178,8 @@ fun HomeScreen(
 // Hero Section with football images and modern design
 @Composable
 fun HeroSection(
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onNavigateToSettings: () -> Unit = {}
 ) {
     val footballImages = listOf(
         "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&h=400&fit=crop",
@@ -337,6 +307,23 @@ fun HeroSection(
                                 modifier = Modifier.size(20.dp)
                             )
                         }
+                        }
+
+                        IconButton(
+                            onClick = onNavigateToSettings,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(
+                                    Color.White.copy(alpha = 0.2f),
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Settings",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
                     }
                 }
 
