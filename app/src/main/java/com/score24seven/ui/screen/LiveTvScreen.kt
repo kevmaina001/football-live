@@ -88,7 +88,10 @@ fun LiveTvScreen(
                 } else {
                     LiveMatchesList(
                         matches = sortedMatches,
-                        onMatchClick = onMatchClick
+                        onMatchClick = onMatchClick,
+                        onToggleFavorite = { matchId ->
+                            viewModel.handleAction(com.score24seven.ui.state.HomeScreenAction.ToggleMatchFavorite(matchId))
+                        }
                     )
                 }
             }
@@ -167,7 +170,8 @@ private fun LiveTvHeader() {
 @Composable
 private fun LiveMatchesList(
     matches: List<Match>,
-    onMatchClick: (Match) -> Unit
+    onMatchClick: (Match) -> Unit,
+    onToggleFavorite: (Int) -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(horizontal = Spacing.sm, vertical = Spacing.xs),
@@ -187,8 +191,8 @@ private fun LiveMatchesList(
                 ModernMatchCard(
                     match = match,
                     onClick = { onMatchClick(match) },
-                    onLiveClick = { /* TODO: Handle live click */ },
-                    onFavoriteClick = { /* TODO: Handle favorite click */ }
+                    onLiveClick = { onMatchClick(match) },
+                    onFavoriteClick = { onToggleFavorite(match.id) }
                 )
             }
 

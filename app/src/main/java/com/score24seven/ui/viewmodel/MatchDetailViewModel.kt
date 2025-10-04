@@ -32,7 +32,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MatchDetailViewModel @Inject constructor(
     private val getMatchDetailsUseCase: GetMatchDetailsUseCase,
-    private val matchDetailRepository: MatchDetailRepository
+    private val matchDetailRepository: MatchDetailRepository,
+    private val favoritesRepository: com.score24seven.domain.repository.FavoritesRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MatchDetailState())
@@ -322,10 +323,24 @@ class MatchDetailViewModel @Inject constructor(
     private fun toggleFavorite() {
         viewModelScope.launch {
             try {
-                // TODO: Implement favorite toggle when repository is available
-                _effects.send(MatchDetailEffect.ShowSnackbar("Match favorite toggled"))
+                val matchId = currentMatchId ?: return@launch
+                val isFavorite = favoritesRepository.isFavorite(matchId)
+
+                if (isFavorite) {
+                    favoritesRepository.removeFromFavorites(matchId)
+                    _effects.send(MatchDetailEffect.ShowSnackbar("Match removed from favorites"))
+                    println("💔 DEBUG: MatchDetailViewModel - Match $matchId removed from favorites")
+                } else {
+                    favoritesRepository.addToFavorites(matchId)
+                    _effects.send(MatchDetailEffect.ShowSnackbar("Match added to favorites"))
+                    println("💖 DEBUG: MatchDetailViewModel - Match $matchId added to favorites")
+                }
+
+                // Reload match to update isFavorite flag
+                loadMatch(matchId)
             } catch (e: Exception) {
                 _effects.send(MatchDetailEffect.ShowError("Failed to toggle favorite"))
+                println("❌ DEBUG: MatchDetailViewModel - Failed to toggle favorite: ${e.message}")
             }
         }
     }

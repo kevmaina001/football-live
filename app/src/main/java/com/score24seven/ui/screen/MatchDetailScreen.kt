@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.runtime.*
@@ -54,6 +56,26 @@ fun MatchDetailScreen(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
                         )
+                    }
+                },
+                actions = {
+                    // Favorite button - show only when match is loaded
+                    when (val matchState = state.match) {
+                        is UiState.Success -> {
+                            val match = matchState.data
+                            IconButton(onClick = {
+                                viewModel.handleAction(MatchDetailAction.ToggleFavorite)
+                            }) {
+                                Icon(
+                                    imageVector = if (match.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                    contentDescription = if (match.isFavorite) "Remove from favorites" else "Add to favorites",
+                                    tint = if (match.isFavorite) Color(0xFFE91E63) else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                        else -> {
+                            // Don't show favorite button while loading
+                        }
                     }
                 }
             )
