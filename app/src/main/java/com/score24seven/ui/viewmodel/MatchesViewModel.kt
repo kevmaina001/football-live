@@ -24,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MatchesViewModel @Inject constructor(
     private val matchRepository: MatchRepository,
-    private val leagueInfoRepository: LeagueInfoRepository
+    private val leagueInfoRepository: LeagueInfoRepository,
+    private val favoritesRepository: com.score24seven.domain.repository.FavoritesRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MatchesState())
@@ -299,6 +300,23 @@ class MatchesViewModel @Inject constructor(
             "europe" -> "https://flagcdn.com/w40/eu.png"
             "usa" -> "https://flagcdn.com/w40/us.png"
             else -> null
+        }
+    }
+
+    fun toggleFavorite(matchId: Int) {
+        viewModelScope.launch {
+            try {
+                val isFavorite = favoritesRepository.isFavorite(matchId)
+                if (isFavorite) {
+                    favoritesRepository.removeFromFavorites(matchId)
+                    println("💔 DEBUG: MatchesViewModel - Match $matchId removed from favorites")
+                } else {
+                    favoritesRepository.addToFavorites(matchId)
+                    println("💖 DEBUG: MatchesViewModel - Match $matchId added to favorites")
+                }
+            } catch (e: Exception) {
+                println("❌ DEBUG: MatchesViewModel - Failed to toggle favorite: ${e.message}")
+            }
         }
     }
 }

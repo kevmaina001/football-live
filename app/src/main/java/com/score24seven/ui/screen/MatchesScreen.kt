@@ -36,6 +36,7 @@ import com.score24seven.ui.viewmodel.MatchesState
 import com.score24seven.ui.components.CountryFlag
 import com.score24seven.ui.components.TeamLogo
 import com.score24seven.ui.components.LeagueLogo
+import com.score24seven.ui.components.ModernMatchCard
 import com.score24seven.util.Config
 import java.time.LocalDate
 
@@ -136,7 +137,8 @@ fun MatchesScreen(
                     viewModel.selectLeague(null)
                     viewModel.loadMatchesForDate(state.selectedDate)
                 },
-                onMatchClick = onNavigateToMatchDetail
+                onMatchClick = onNavigateToMatchDetail,
+                onToggleFavorite = { matchId -> viewModel.toggleFavorite(matchId) }
             )
         } else {
             // Show competitions list
@@ -381,7 +383,8 @@ fun CompetitionMatchesView(
     selectedLeague: Int,
     selectedDate: LocalDate,
     onBackClick: () -> Unit,
-    onMatchClick: (Int) -> Unit
+    onMatchClick: (Int) -> Unit,
+    onToggleFavorite: (Int) -> Unit = {}
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -427,9 +430,11 @@ fun CompetitionMatchesView(
                 val leagueMatches = matches.data.filter { it.league.id == selectedLeague }
                 if (leagueMatches.isNotEmpty()) {
                     items(leagueMatches) { match ->
-                        MatchCard(
+                        ModernMatchCard(
                             match = match,
-                            onClick = { onMatchClick(match.id) }
+                            onClick = { onMatchClick(match.id) },
+                            onLiveClick = { onMatchClick(match.id) },
+                            onFavoriteClick = { onToggleFavorite(match.id) }
                         )
                     }
                 } else {
