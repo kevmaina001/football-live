@@ -23,6 +23,7 @@ import com.score24seven.ui.screen.LiveTvScreen
 import com.score24seven.ui.screen.LeagueDetailsScreen
 import com.score24seven.ui.screen.TeamDetailScreen
 import com.score24seven.ui.screen.FavoritesScreen
+import com.score24seven.ui.screen.SearchScreen
 
 @Composable
 fun Score24SevenNavigation(
@@ -78,6 +79,18 @@ fun Score24SevenNavigation(
             FavoritesScreen(
                 onNavigateToMatchDetail = { matchId ->
                     navController.navigate(Screen.MatchDetail.createRoute(matchId))
+                }
+            )
+        }
+
+        composable(Screen.Search.route) {
+            SearchScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToMatchDetail = { matchId ->
+                    navController.navigate(Screen.MatchDetail.createRoute(matchId))
+                },
+                onNavigateToTeamDetail = { teamId ->
+                    navController.navigate(Screen.TeamDetail.createRoute(teamId))
                 }
             )
         }
@@ -139,6 +152,7 @@ sealed class Screen(val route: String) {
     object Leagues : Screen("leagues")
     object Favorites : Screen("favorites")
     object Settings : Screen("settings")
+    object Search : Screen("search")
     object MatchDetail : Screen("match_detail/{matchId}") {
         fun createRoute(matchId: Int) = "match_detail/$matchId"
     }
