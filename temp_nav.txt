@@ -1,0 +1,1 @@
+import com.score24seven.ui.screen.FavoritesScreen

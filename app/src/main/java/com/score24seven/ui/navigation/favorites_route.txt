@@ -1,0 +1,8 @@
+
+        composable(Screen.Favorites.route) {
+            FavoritesScreen(
+                onNavigateToMatchDetail = { matchId ->
+                    navController.navigate(Screen.MatchDetail.createRoute(matchId))
+                }
+            )
+        }

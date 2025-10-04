@@ -22,7 +22,6 @@ import com.score24seven.ui.screen.SettingsScreen
 import com.score24seven.ui.screen.LiveTvScreen
 import com.score24seven.ui.screen.LeagueDetailsScreen
 import com.score24seven.ui.screen.TeamDetailScreen
-import com.score24seven.ui.screen.FavoritesScreen
 
 @Composable
 fun Score24SevenNavigation(
@@ -72,14 +71,6 @@ fun Score24SevenNavigation(
 
         composable(Screen.Settings.route) {
             SettingsScreen()
-        }
-
-        composable(Screen.Favorites.route) {
-            FavoritesScreen(
-                onNavigateToMatchDetail = { matchId ->
-                    navController.navigate(Screen.MatchDetail.createRoute(matchId))
-                }
-            )
         }
 
         composable(
@@ -137,7 +128,6 @@ sealed class Screen(val route: String) {
     object Matches : Screen("matches")
     object LiveTV : Screen("live_tv")
     object Leagues : Screen("leagues")
-    object Favorites : Screen("favorites")
     object Settings : Screen("settings")
     object MatchDetail : Screen("match_detail/{matchId}") {
         fun createRoute(matchId: Int) = "match_detail/$matchId"
@@ -177,8 +167,8 @@ val bottomNavigationItems = listOf(
         selectedIconResId = 0
     ),
     BottomNavigationItem(
-        route = Screen.Favorites.route,
-        title = "Favorites",
+        route = Screen.Settings.route,
+        title = "Settings",
         iconResId = 0,
         selectedIconResId = 0
     )

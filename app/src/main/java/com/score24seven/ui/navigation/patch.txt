@@ -1,0 +1,27 @@
+24a25
+> import com.score24seven.ui.screen.FavoritesScreen
+74a82,88
+> 
+>         composable(Screen.Favorites.route) {
+>             FavoritesScreen(
+>                 onNavigateToMatchDetail = { matchId ->
+>                     navController.navigate(Screen.MatchDetail.createRoute(matchId))
+>                 }
+>             )
+>         }
+131a142
+>     object Favorites : Screen("favorites")
+169c180,184
+<     BottomNavigationItem(
+<         route = Screen.Settings.route,
+<         title = "Settings",
+<         iconResId = 0,
+<         selectedIconResId = 0
+<     )
+---
+>     BottomNavigationItem(
+>         route = Screen.Favorites.route,
+>         title = "Favorites",
+>         iconResId = 0,
+>         selectedIconResId = 0
+>     )
