@@ -84,10 +84,39 @@ class MatchesViewModel @Inject constructor(
     }
 
     private fun loadAllFavoriteCompetitions() {
-        println("🟢 DEBUG: MatchesViewModel - loadAllFavoriteCompetitions() called - showing all favorites with match counts")
+        println("🟢 DEBUG: MatchesViewModel - loadAllFavoriteCompetitions() called - optimized loading")
         viewModelScope.launch {
             try {
-                // Get matches first to supplement favorite competitions with real data
+                // OPTIMIZED: Create favorites instantly from config while loading matches
+                val instantFavorites = Config.PRIORITY_LEAGUE_IDS.map { leagueId ->
+                    val leagueInfo = Config.FAVORITE_LEAGUE_INFO[leagueId]
+                    val logoUrl = getLeagueLogoUrl(leagueId)
+                    val flagUrl = getCountryFlagUrl(leagueInfo?.second)
+
+                    println("🚀 DEBUG: Creating instant favorite - ID: $leagueId, Name: ${leagueInfo?.first}, Logo: $logoUrl")
+
+                    LeagueInfo(
+                        league = com.score24seven.domain.model.LeagueDetails(
+                            id = leagueId,
+                            name = leagueInfo?.first ?: "League $leagueId",
+                            type = "League",
+                            logo = logoUrl // Add proper logo URLs
+                        ),
+                        country = com.score24seven.domain.model.CountryDetails(
+                            name = leagueInfo?.second ?: "Unknown",
+                            code = null,
+                            flag = flagUrl // Add flag URLs
+                        ),
+                        seasons = emptyList()
+                    )
+                }
+
+                // Show favorites immediately for better UX
+                _state.update {
+                    it.copy(favoriteLeagues = UiState.Success(instantFavorites))
+                }
+
+                // Get matches to supplement with real data (async)
                 matchRepository.getMatchesForDate(LocalDate.now().toString()).collect { resource ->
                     when (resource) {
                         is Resource.Success -> {
@@ -115,60 +144,18 @@ class MatchesViewModel @Inject constructor(
                                 }
                             }
 
-                            // Log all leagues with their country flags for debugging
-                            allLeaguesFromMatches.values.forEach { league ->
-                                println("🏳️ DEBUG: League: ${league.league.name} | Country: ${league.country.name} | Flag URL: ${league.country.flag}")
+                            // OPTIMIZED: Update favorites with real match data if available
+                            val updatedFavorites = Config.PRIORITY_LEAGUE_IDS.map { leagueId ->
+                                // Use actual match data if available, otherwise keep instant favorites
+                                allLeaguesFromMatches[leagueId] ?: instantFavorites.find { it.league.id == leagueId }!!
                             }
 
-                            // Create ALL favorite leagues - always show them regardless of matches
-                            val favoriteLeagues = Config.PRIORITY_LEAGUE_IDS.map { leagueId ->
-                                // Use actual match data if available, otherwise use config data
-                                allLeaguesFromMatches[leagueId] ?: run {
-                                    val leagueInfo = Config.FAVORITE_LEAGUE_INFO[leagueId]
-                                    LeagueInfo(
-                                        league = com.score24seven.domain.model.LeagueDetails(
-                                            id = leagueId,
-                                            name = leagueInfo?.first ?: "League $leagueId",
-                                            type = "League",
-                                            logo = null
-                                        ),
-                                        country = com.score24seven.domain.model.CountryDetails(
-                                            name = leagueInfo?.second ?: "Unknown",
-                                            code = null,
-                                            flag = null
-                                        ),
-                                        seasons = emptyList()
-                                    )
-                                }
-                            }
+                            println("🟢 DEBUG: MatchesViewModel - Updated ${updatedFavorites.size} favorite competitions with match data")
 
-                            println("🟢 DEBUG: MatchesViewModel - Created ${favoriteLeagues.size} favorite competitions (all shown)")
-                            favoriteLeagues.forEach { league ->
-                                println("🟢 DEBUG: MatchesViewModel - Favorite Competition: ${league.league.name} (ID: ${league.league.id})")
-                                println("🟢 DEBUG: MatchesViewModel - Logo URL: '${league.league.logo}'")
-                                println("🟢 DEBUG: MatchesViewModel - Country: ${league.country.name}, Flag URL: '${league.country.flag}'")
-
-                                // Check if this league has real match data or is from config
-                                val hasRealData = allLeaguesFromMatches.containsKey(league.league.id)
-                                println("🟢 DEBUG: MatchesViewModel - Has real match data: $hasRealData")
-                            }
-
-                            // Also debug specific missing competitions
-                            val missingCompetitions = listOf(39, 2, 3, 253, 45) // PL, UCL, UEL, MLS, FA Cup
-                            missingCompetitions.forEach { leagueId ->
-                                val leagueName = Config.FAVORITE_LEAGUE_INFO[leagueId]?.first ?: "Unknown"
-                                val hasMatches = allLeaguesFromMatches.containsKey(leagueId)
-                                println("🔍 DEBUG: Competition $leagueName (ID: $leagueId) - Has matches: $hasMatches")
-                                if (hasMatches) {
-                                    val league = allLeaguesFromMatches[leagueId]
-                                    println("🔍 DEBUG: $leagueName logo: '${league?.league?.logo}'")
-                                }
-                            }
-
-                            // Update state with all favorites and all leagues
+                            // Update state with updated favorites and all leagues
                             _state.update {
                                 it.copy(
-                                    favoriteLeagues = UiState.Success(favoriteLeagues),
+                                    favoriteLeagues = UiState.Success(updatedFavorites),
                                     allLeagues = UiState.Success(allLeaguesFromMatches.values.toList())
                                 )
                             }
@@ -271,6 +258,47 @@ class MatchesViewModel @Inject constructor(
                 expandedCountries.add(countryName)
             }
             currentState.copy(expandedCountries = expandedCountries)
+        }
+    }
+
+    // LOGO FIX: Helper functions for league logos and country flags - matches Config.PRIORITY_LEAGUE_IDS
+    private fun getLeagueLogoUrl(leagueId: Int): String? {
+        println("🏆 DEBUG: Getting league logo URL for league ID: $leagueId")
+        val logoUrl = when (leagueId) {
+            // Major leagues from Config.PRIORITY_LEAGUE_IDS
+            39 -> "https://media.api-sports.io/football/leagues/39.png" // Premier League (England)
+            2 -> "https://media.api-sports.io/football/leagues/2.png" // UEFA Champions League
+            3 -> "https://media.api-sports.io/football/leagues/3.png" // UEFA Europa League
+            1 -> "https://media.api-sports.io/football/leagues/1.png" // World Cup (FIFA)
+            140 -> "https://media.api-sports.io/football/leagues/140.png" // La Liga (Spain)
+            78 -> "https://media.api-sports.io/football/leagues/78.png" // Bundesliga (Germany)
+            135 -> "https://media.api-sports.io/football/leagues/135.png" // Serie A (Italy)
+            61 -> "https://media.api-sports.io/football/leagues/61.png" // Ligue 1 (France)
+            5 -> "https://media.api-sports.io/football/leagues/5.png" // UEFA Nations League
+            848 -> "https://media.api-sports.io/football/leagues/848.png" // UEFA Europa Conference League
+            45 -> "https://media.api-sports.io/football/leagues/45.png" // FA Cup (England)
+            40 -> "https://media.api-sports.io/football/leagues/40.png" // Championship (England)
+            4 -> "https://media.api-sports.io/football/leagues/4.png" // European Championship
+            253 -> "https://media.api-sports.io/football/leagues/253.png" // Major League Soccer (USA)
+            else -> {
+                println("🔴 DEBUG: No logo URL mapping for league ID: $leagueId")
+                null
+            }
+        }
+        println("🏆 DEBUG: League ID $leagueId -> Logo URL: $logoUrl")
+        return logoUrl
+    }
+
+    private fun getCountryFlagUrl(country: String?): String? {
+        return when (country?.lowercase()) {
+            "england" -> "https://flagcdn.com/w40/gb-eng.png"
+            "spain" -> "https://flagcdn.com/w40/es.png"
+            "germany" -> "https://flagcdn.com/w40/de.png"
+            "italy" -> "https://flagcdn.com/w40/it.png"
+            "france" -> "https://flagcdn.com/w40/fr.png"
+            "europe" -> "https://flagcdn.com/w40/eu.png"
+            "usa" -> "https://flagcdn.com/w40/us.png"
+            else -> null
         }
     }
 }

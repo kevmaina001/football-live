@@ -6,12 +6,14 @@
 package com.score24seven.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +32,7 @@ import com.score24seven.ui.viewmodel.MatchDetailViewModel
 fun MatchDetailScreen(
     matchId: Int,
     onNavigateBack: (() -> Unit)? = null,
+    onNavigateToLeague: ((Int) -> Unit)? = null,
     viewModel: MatchDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -75,22 +78,55 @@ fun MatchDetailScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
-                        // League info
-                        Card {
-                            Column(
-                                modifier = Modifier.padding(16.dp)
+                        // League info - CLICKABLE navigation
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .let { cardModifier ->
+                                    if (onNavigateToLeague != null) {
+                                        cardModifier.clickable {
+                                            onNavigateToLeague(match.league.id)
+                                        }
+                                    } else {
+                                        cardModifier
+                                    }
+                                }
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = match.league.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                Text(
-                                    text = match.league.country,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        text = match.league.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = "${match.league.country} • Click to view league",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                if (onNavigateToLeague != null) {
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowBack,
+                                        contentDescription = "View league",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .graphicsLayer {
+                                                rotationZ = 180f
+                                            }
+                                    )
+                                }
                             }
                         }
                     }

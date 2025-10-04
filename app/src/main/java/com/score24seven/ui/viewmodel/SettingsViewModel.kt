@@ -5,13 +5,24 @@
 package com.score24seven.ui.viewmodel
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
+import android.os.Build
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.score24seven.MainActivity
 import com.score24seven.Score24SevenApplication
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -75,19 +86,138 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun setNotificationsEnabled(enabled: Boolean) {
-        preferencesManager.setNotificationsEnabled(enabled)
+        viewModelScope.launch {
+            try {
+                if (enabled) {
+                    // Create notification channels when enabling notifications
+                    createNotificationChannels()
+
+                    // Check if notifications are actually allowed
+                    val notificationManager = NotificationManagerCompat.from(getApplication())
+                    if (!notificationManager.areNotificationsEnabled()) {
+                        _uiState.value = _uiState.value.copy(
+                            message = "Please enable notifications in your device settings for Score24Seven."
+                        )
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            message = "Notifications enabled successfully."
+                        )
+                    }
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        message = "Notifications disabled."
+                    )
+                }
+
+                preferencesManager.setNotificationsEnabled(enabled)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    message = "Failed to update notification settings: ${e.message}"
+                )
+            }
+        }
     }
 
     fun setLiveScoreNotifications(enabled: Boolean) {
         preferencesManager.setLiveScoreNotifications(enabled)
+        _uiState.value = _uiState.value.copy(
+            message = if (enabled) "Live score notifications enabled" else "Live score notifications disabled"
+        )
     }
 
     fun setMatchReminders(enabled: Boolean) {
         preferencesManager.setMatchReminders(enabled)
+        _uiState.value = _uiState.value.copy(
+            message = if (enabled) "Match reminders enabled" else "Match reminders disabled"
+        )
+    }
+
+    private fun createNotificationChannels() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val context = getApplication<Application>()
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            // Live Score Updates Channel
+            val liveScoreChannel = NotificationChannel(
+                "live_scores",
+                "Live Score Updates",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Real-time score updates for live matches"
+                enableVibration(true)
+                setShowBadge(true)
+            }
+
+            // Match Reminders Channel
+            val remindersChannel = NotificationChannel(
+                "match_reminders",
+                "Match Reminders",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Reminders for upcoming matches"
+                enableVibration(true)
+                setShowBadge(true)
+            }
+
+            // General Notifications Channel
+            val generalChannel = NotificationChannel(
+                "general",
+                "General Notifications",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "General app notifications"
+                setShowBadge(false)
+            }
+
+            // Create the channels
+            notificationManager.createNotificationChannels(listOf(
+                liveScoreChannel,
+                remindersChannel,
+                generalChannel
+            ))
+
+            println("📱 DEBUG: Notification channels created")
+        }
     }
 
     fun setLanguage(language: String) {
-        preferencesManager.setLanguage(language)
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
+            try {
+                // Save language preference
+                preferencesManager.setLanguage(language)
+
+                // Apply language change to the app
+                applyLanguageChange(language)
+
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    message = "Language changed to ${SettingsLanguage.entries.find { it.code == language }?.displayName ?: language}. Restart the app to see full effect."
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    message = "Failed to change language: ${e.message}"
+                )
+            }
+        }
+    }
+
+    private fun applyLanguageChange(languageCode: String) {
+        try {
+            // Set app locale using AppCompatDelegate for immediate effect
+            val localeList = LocaleListCompat.forLanguageTags(languageCode)
+            AppCompatDelegate.setApplicationLocales(localeList)
+
+            // Also update the default locale
+            val locale = Locale(languageCode)
+            Locale.setDefault(locale)
+
+            println("🌐 DEBUG: Language changed to $languageCode")
+        } catch (e: Exception) {
+            println("🔴 ERROR: Failed to apply language change: ${e.message}")
+        }
     }
 
     fun clearAllData() {

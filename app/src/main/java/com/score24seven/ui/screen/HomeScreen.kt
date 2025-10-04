@@ -41,6 +41,7 @@ import com.score24seven.ui.state.HomeScreenEffect
 import com.score24seven.ui.state.UiState
 import com.score24seven.ui.viewmodel.HomeViewModel
 import com.score24seven.ui.components.TeamLogo
+import com.score24seven.ui.components.FavoriteMatchesSection
 import com.score24seven.ui.navigation.Screen
 import com.score24seven.util.Config
 
@@ -98,8 +99,45 @@ fun HomeScreen(
                 todayMatchesCount = when (val todayState = state.todayMatches) {
                     is UiState.Success -> todayState.data.size
                     else -> 0
-                }
+                },
+                favoritesCount = when (val favoriteState = state.favoriteMatches) {
+                    is UiState.Success -> favoriteState.data.size
+                    else -> 0
+                },
+                navController = navController
             )
+        }
+
+        // Favorite Matches Section
+        when (val favoriteMatchesState = state.favoriteMatches) {
+            is UiState.Loading -> {
+                item {
+                    LoadingCard("Loading favorite matches...")
+                }
+            }
+            is UiState.Success -> {
+                val favoriteMatches = favoriteMatchesState.data
+                if (favoriteMatches.isNotEmpty()) {
+                    item {
+                        FavoriteMatchesSection(
+                            matches = favoriteMatches,
+                            onMatchClick = onNavigateToMatchDetail,
+                            onToggleFavorite = { matchId ->
+                                viewModel.handleAction(HomeScreenAction.ToggleMatchFavorite(matchId))
+                            }
+                        )
+                    }
+                }
+            }
+            is UiState.Error -> {
+                item {
+                    ErrorCard(
+                        title = "Favorite Matches Unavailable",
+                        message = favoriteMatchesState.message ?: "Unable to load favorite matches",
+                        onRetry = { viewModel.handleAction(HomeScreenAction.RefreshData) }
+                    )
+                }
+            }
         }
 
         // Live Matches Carousel
@@ -144,7 +182,8 @@ fun HomeScreen(
                     item {
                         FeaturedMatchesPreview(
                             matches = filterFavoriteLeagueMatches(todayMatches).take(3), // Show top 3 matches from favorite leagues
-                            onMatchClick = onNavigateToMatchDetail
+                            onMatchClick = onNavigateToMatchDetail,
+                            navController = navController // Add navigation support
                         )
                     }
                 }
@@ -411,7 +450,9 @@ fun QuickAccessCard(
 @Composable
 fun StatsOverview(
     liveMatchesCount: Int,
-    todayMatchesCount: Int
+    todayMatchesCount: Int,
+    favoritesCount: Int,
+    navController: NavHostController? = null
 ) {
     Column {
         Text(
@@ -423,21 +464,47 @@ fun StatsOverview(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             StatsCard(
                 modifier = Modifier.weight(1f),
                 title = "Live Now",
                 value = liveMatchesCount.toString(),
                 icon = Icons.Default.PlayArrow,
-                color = Color(0xFFE53E3E)
+                color = Color(0xFFE53E3E),
+                onClick = {
+                    navController?.navigate(Screen.Matches.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
             StatsCard(
                 modifier = Modifier.weight(1f),
-                title = "Today's Games",
+                title = "Favorites",
+                value = favoritesCount.toString(),
+                icon = Icons.Default.Favorite,
+                color = Color(0xFFE91E63),
+                onClick = null
+            )
+            StatsCard(
+                modifier = Modifier.weight(1f),
+                title = "Today",
                 value = todayMatchesCount.toString(),
                 icon = Icons.Default.DateRange,
-                color = Color(0xFF1976D2)
+                color = Color(0xFF1976D2),
+                onClick = {
+                    navController?.navigate(Screen.Matches.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
         }
     }
@@ -449,10 +516,19 @@ fun StatsCard(
     title: String,
     value: String,
     icon: ImageVector,
-    color: Color
+    color: Color,
+    onClick: (() -> Unit)? = null
 ) {
     Card(
-        modifier = modifier.height(80.dp),
+        modifier = modifier
+            .height(80.dp)
+            .let { cardModifier ->
+                if (onClick != null) {
+                    cardModifier.clickable { onClick() }
+                } else {
+                    cardModifier
+                }
+            },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -964,7 +1040,8 @@ fun RealMatchCard(
 @Composable
 fun FeaturedMatchesPreview(
     matches: List<Match>,
-    onMatchClick: (Int) -> Unit
+    onMatchClick: (Int) -> Unit,
+    navController: NavHostController? = null
 ) {
     Column {
         Row(
@@ -980,7 +1057,16 @@ fun FeaturedMatchesPreview(
             )
 
             TextButton(
-                onClick = { /* Navigate to matches screen */ }
+                onClick = {
+                    // NAVIGATION: Navigate to matches screen
+                    navController?.navigate(Screen.Matches.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             ) {
                 Text(
                     text = "View All",

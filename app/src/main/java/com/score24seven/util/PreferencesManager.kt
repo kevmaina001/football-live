@@ -20,6 +20,7 @@ class PreferencesManager(context: Context) {
         private const val KEY_MATCH_REMINDERS = "match_reminders"
         private const val KEY_LANGUAGE = "language"
         private const val KEY_FIRST_LAUNCH = "first_launch"
+        private const val KEY_FAVORITE_MATCHES = "favorite_matches"
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -45,6 +46,10 @@ class PreferencesManager(context: Context) {
     // Language state
     private val _language = MutableStateFlow(getLanguage())
     val language: StateFlow<String> = _language.asStateFlow()
+
+    // Favorite matches state - reactive StateFlow
+    private val _favoriteMatchIds = MutableStateFlow(getFavoriteMatchIds())
+    val favoriteMatchIds: StateFlow<List<Int>> = _favoriteMatchIds.asStateFlow()
 
     // Dark Mode
     fun getDarkMode(): Boolean {
@@ -105,6 +110,28 @@ class PreferencesManager(context: Context) {
         prefs.edit().putBoolean(KEY_FIRST_LAUNCH, false).apply()
     }
 
+    // Favorite Matches - now with reactive updates
+    fun getFavoriteMatchIds(): List<Int> {
+        val favoritesString = prefs.getString(KEY_FAVORITE_MATCHES, "") ?: ""
+        return if (favoritesString.isBlank()) {
+            emptyList()
+        } else {
+            try {
+                favoritesString.split(",").map { it.trim().toInt() }
+            } catch (e: Exception) {
+                println("❌ ERROR: Failed to parse favorite matches: ${e.message}")
+                emptyList()
+            }
+        }
+    }
+
+    fun setFavoriteMatchIds(matchIds: List<Int>) {
+        val favoritesString = matchIds.joinToString(",")
+        prefs.edit().putString(KEY_FAVORITE_MATCHES, favoritesString).apply()
+        _favoriteMatchIds.value = matchIds // Update StateFlow to trigger observers
+        println("💖 DEBUG: Saved favorite matches: $favoritesString - ${matchIds.size} favorites")
+    }
+
     // Clear all preferences
     fun clearAll() {
         prefs.edit().clear().apply()
@@ -114,5 +141,6 @@ class PreferencesManager(context: Context) {
         _liveScoreNotifications.value = true
         _matchReminders.value = true
         _language.value = "en"
+        _favoriteMatchIds.value = emptyList()
     }
 }

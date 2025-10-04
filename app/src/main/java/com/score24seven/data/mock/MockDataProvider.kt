@@ -21,39 +21,9 @@ class MockDataProvider @Inject constructor() {
     fun isCurrentlyUsingMockData(): Boolean = isUsingMockData
 
     fun getMockLiveMatches(): List<Match> {
-        val now = LocalDateTime.now()
-        return listOf(
-            Match(
-                id = 1001,
-                homeTeam = Team(1, "Manchester City", "MCI", "https://example.com/mci.png", "England", 1880, false),
-                awayTeam = Team(2, "Arsenal", "ARS", "https://example.com/ars.png", "England", 1886, false),
-                league = League(39, "Premier League", "England", "https://example.com/pl.png"),
-                fixture = Fixture(now.minusMinutes(45), "UTC", System.currentTimeMillis()),
-                score = Score(home = 2, away = 1),
-                status = MatchStatus("2H", "Second Half", 67, true, false),
-                venue = Venue(1, "Etihad Stadium", "Manchester")
-            ),
-            Match(
-                id = 1002,
-                homeTeam = Team(3, "Liverpool", "LIV", "https://example.com/liv.png", "England", 1892, false),
-                awayTeam = Team(4, "Chelsea", "CHE", "https://example.com/che.png", "England", 1905, false),
-                league = League(39, "Premier League", "England", "https://example.com/pl.png"),
-                fixture = Fixture(now.minusMinutes(20), "UTC", System.currentTimeMillis()),
-                score = Score(home = 1, away = 0),
-                status = MatchStatus("1H", "First Half", 32, true, false),
-                venue = Venue(2, "Anfield", "Liverpool")
-            ),
-            Match(
-                id = 1003,
-                homeTeam = Team(5, "Real Madrid", "RMA", "https://example.com/rma.png", "Spain", 1902, false),
-                awayTeam = Team(6, "Barcelona", "BAR", "https://example.com/bar.png", "Spain", 1899, false),
-                league = League(140, "La Liga", "Spain", "https://example.com/laliga.png"),
-                fixture = Fixture(now.minusMinutes(75), "UTC", System.currentTimeMillis()),
-                score = Score(home = 3, away = 2),
-                status = MatchStatus("2H", "Second Half", 89, true, false),
-                venue = Venue(3, "Santiago Bernabéu", "Madrid")
-            )
-        )
+        // Return empty list when there are no live matches
+        // This prevents showing dummy data when API is unavailable
+        return emptyList()
     }
 
     fun getMockTodayMatches(): List<Match> {

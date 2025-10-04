@@ -11,12 +11,14 @@ import com.score24seven.data.repository.LeagueInfoRepositoryImpl
 import com.score24seven.data.repository.StandingRepositoryImpl
 import com.score24seven.data.repository.TeamRepositoryImpl
 import com.score24seven.data.repository.TopScorerRepositoryImpl
+import com.score24seven.data.repository.FavoritesRepositoryImpl
 import com.score24seven.domain.repository.MatchRepository
 import com.score24seven.domain.repository.MatchDetailRepository
 import com.score24seven.domain.repository.LeagueInfoRepository
 import com.score24seven.domain.repository.StandingRepository
 import com.score24seven.domain.repository.TeamRepository
 import com.score24seven.domain.repository.TopScorerRepository
+import com.score24seven.domain.repository.FavoritesRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -62,4 +64,10 @@ abstract class RepositoryModule {
     abstract fun bindTopScorerRepository(
         topScorerRepositoryImpl: TopScorerRepositoryImpl
     ): TopScorerRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFavoritesRepository(
+        favoritesRepositoryImpl: FavoritesRepositoryImpl
+    ): FavoritesRepository
 }

@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.score24seven.domain.model.Match
 import com.score24seven.domain.usecase.GetLiveMatchesUseCase
 import com.score24seven.domain.usecase.GetTodayMatchesUseCase
+import com.score24seven.domain.repository.FavoritesRepository
 import com.score24seven.domain.util.Resource
 import com.score24seven.ui.state.HomeScreenAction
 import com.score24seven.ui.state.HomeScreenEffect
@@ -31,7 +32,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getLiveMatchesUseCase: GetLiveMatchesUseCase,
-    private val getTodayMatchesUseCase: GetTodayMatchesUseCase
+    private val getTodayMatchesUseCase: GetTodayMatchesUseCase,
+    private val favoritesRepository: FavoritesRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeScreenState())
@@ -51,6 +53,20 @@ class HomeViewModel @Inject constructor(
         }
 
         observeLiveMatches()
+        observeFavoriteMatches()
+        startAutoRefresh()
+    }
+
+    private fun startAutoRefresh() {
+        viewModelScope.launch {
+            while (true) {
+                delay(30000) // Auto-refresh every 30 seconds
+                println("🔄 DEBUG: Auto-refreshing home screen data")
+                loadLiveMatches()
+                delay(1000)
+                loadTodayMatches()
+            }
+        }
     }
 
     fun handleAction(action: HomeScreenAction) {
@@ -143,6 +159,17 @@ class HomeViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    private fun observeFavoriteMatches() {
+        favoritesRepository.getFavoriteMatches()
+            .onEach { favoriteMatches ->
+                println("💖 DEBUG: HomeViewModel - Favorite matches updated: ${favoriteMatches.size} matches")
+                updateState {
+                    copy(favoriteMatches = UiState.Success(favoriteMatches))
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
     private fun loadTodayMatches() {
         println("🟢 DEBUG: HomeViewModel.loadTodayMatches() starting")
         getTodayMatchesUseCase()
@@ -177,10 +204,19 @@ class HomeViewModel @Inject constructor(
     private fun toggleMatchFavorite(matchId: Int) {
         viewModelScope.launch {
             try {
-                // TODO: Implement favorite toggle for match ID: $matchId
-                _effects.send(HomeScreenEffect.ShowSnackbar("Match $matchId favorite toggled"))
+                val isFavorite = favoritesRepository.isFavorite(matchId)
+                if (isFavorite) {
+                    favoritesRepository.removeFromFavorites(matchId)
+                    _effects.send(HomeScreenEffect.ShowSnackbar("Match removed from favorites"))
+                    println("💔 DEBUG: HomeViewModel - Match $matchId removed from favorites")
+                } else {
+                    favoritesRepository.addToFavorites(matchId)
+                    _effects.send(HomeScreenEffect.ShowSnackbar("Match added to favorites"))
+                    println("💖 DEBUG: HomeViewModel - Match $matchId added to favorites")
+                }
             } catch (e: Exception) {
                 _effects.send(HomeScreenEffect.ShowError("Failed to toggle favorite"))
+                println("❌ DEBUG: HomeViewModel - Failed to toggle favorite: ${e.message}")
             }
         }
     }

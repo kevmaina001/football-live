@@ -93,14 +93,18 @@ fun MatchesScreen(
             }
         )
 
-        // Date Navigation
+        // Date Navigation - Parent filtering: redirect to competitions when date changes
         FlashScoreDateNavigation(
             selectedDate = state.selectedDate,
             availableDates = viewModel.getAvailableDates(),
             onDateSelected = { date ->
+                // IMPROVED: When date changes in competition view, navigate back to competitions with new date
                 if (state.selectedLeagueId != null) {
-                    viewModel.loadMatchesForLeague(state.selectedLeagueId!!, date)
+                    println("📅 DEBUG: Date changed in competition view - navigating back to competitions with date: $date")
+                    viewModel.selectLeague(null) // Clear selected league first
+                    viewModel.loadMatchesForDate(date) // Load all matches for new date
                 } else {
+                    // Normal date filtering when in competitions view
                     viewModel.loadMatchesForDate(date)
                 }
             },

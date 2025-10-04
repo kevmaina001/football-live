@@ -29,6 +29,7 @@ import com.score24seven.domain.model.Standing
 import com.score24seven.ui.state.UiState
 import com.score24seven.ui.viewmodel.LeaguesViewModel
 import com.score24seven.ui.viewmodel.LeagueTab
+import com.score24seven.ui.components.TeamLogo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -419,8 +420,15 @@ fun StandingsContent(
                         StandingsHeader()
                     }
 
-                    itemsIndexed(standings) { index, standing ->
-                        StandingRow(standing = standing)
+                    itemsIndexed(standings) { _, standing ->
+                        StandingRow(
+                            standing = standing,
+                            onTeamClick = { teamId ->
+                                // NAVIGATION: Navigate to team details
+                                // This would need to be passed down from the parent composable
+                                println("🏃 DEBUG: Team clicked: $teamId - ${standing.team.name}")
+                            }
+                        )
                     }
                 }
             } else {
@@ -528,8 +536,14 @@ private fun StandingsHeader() {
 }
 
 @Composable
-private fun StandingRow(standing: Standing) {
+private fun StandingRow(
+    standing: Standing,
+    onTeamClick: (Int) -> Unit = {}
+) {
     Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onTeamClick(standing.team.id) },
         colors = CardDefaults.cardColors(
             containerColor = getPositionColor(standing.rank)
         ),
@@ -559,13 +573,24 @@ private fun StandingRow(standing: Standing) {
                 )
             }
 
-            // Team name
-            Text(
-                text = standing.team.name,
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.weight(1f).padding(start = 8.dp)
-            )
+            // Team logo and name
+            Row(
+                modifier = Modifier.weight(1f).padding(start = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                TeamLogo(
+                    logoUrl = standing.team.logo?.takeIf { it.isNotBlank() }
+                        ?: "https://media.api-sports.io/football/teams/${standing.team.id}.png",
+                    teamName = standing.team.name,
+                    size = 20.dp
+                )
+                Text(
+                    text = standing.team.name,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium
+                )
+            }
 
             // Stats
             Text(

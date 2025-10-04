@@ -39,8 +39,8 @@ class TeamDetailViewModel @Inject constructor(
         currentTeamId = teamId
         updateState { copy(isRefreshing = true) }
 
-        // Use instant fallback for team info (much faster)
-        loadTeamBasicInfoFallback(teamId)
+        // FIXED: Use proper API loading first, then fallback if needed
+        loadTeamBasicInfo(teamId)
 
         // Load fixtures for current season (2025)
         loadTeamFixturesSimple(teamId, 2025)
@@ -158,7 +158,8 @@ class TeamDetailViewModel @Inject constructor(
             try {
                 println("🔍 DEBUG: Loading team basic info fallback for teamId: $teamId")
 
-                // Map more known team IDs to names and logos (real API team IDs)
+                // EXPANDED: Map more known team IDs to names and logos (real API team IDs)
+                // Adding more teams to reduce "Team #unknown" cases for live matches
                 val knownTeams = mapOf(
                     // Real API team IDs with logos
                     19 to Triple("Arsenal", "England", "https://media.api-sports.io/football/teams/19.png"),
@@ -175,10 +176,35 @@ class TeamDetailViewModel @Inject constructor(
                     45 to Triple("Everton", "England", "https://media.api-sports.io/football/teams/45.png"),
                     46 to Triple("Leicester City", "England", "https://media.api-sports.io/football/teams/46.png"),
                     47 to Triple("Newcastle United", "England", "https://media.api-sports.io/football/teams/47.png"),
+                    // More Premier League teams
+                    39 to Triple("Wolverhampton", "England", "https://media.api-sports.io/football/teams/39.png"),
+                    38 to Triple("Watford", "England", "https://media.api-sports.io/football/teams/38.png"),
+                    51 to Triple("Brighton", "England", "https://media.api-sports.io/football/teams/51.png"),
+                    52 to Triple("Crystal Palace", "England", "https://media.api-sports.io/football/teams/52.png"),
+
                     // La Liga teams
                     541 to Triple("Real Madrid", "Spain", "https://media.api-sports.io/football/teams/541.png"),
                     529 to Triple("Barcelona", "Spain", "https://media.api-sports.io/football/teams/529.png"),
                     530 to Triple("Atletico Madrid", "Spain", "https://media.api-sports.io/football/teams/530.png"),
+                    532 to Triple("Valencia", "Spain", "https://media.api-sports.io/football/teams/532.png"),
+                    533 to Triple("Villarreal", "Spain", "https://media.api-sports.io/football/teams/533.png"),
+
+                    // Serie A teams
+                    489 to Triple("AC Milan", "Italy", "https://media.api-sports.io/football/teams/489.png"),
+                    496 to Triple("Juventus", "Italy", "https://media.api-sports.io/football/teams/496.png"),
+                    497 to Triple("AS Roma", "Italy", "https://media.api-sports.io/football/teams/497.png"),
+                    487 to Triple("Lazio", "Italy", "https://media.api-sports.io/football/teams/487.png"),
+
+                    // Bundesliga teams
+                    157 to Triple("Bayern Munich", "Germany", "https://media.api-sports.io/football/teams/157.png"),
+                    165 to Triple("Borussia Dortmund", "Germany", "https://media.api-sports.io/football/teams/165.png"),
+                    173 to Triple("RB Leipzig", "Germany", "https://media.api-sports.io/football/teams/173.png"),
+
+                    // Ligue 1 teams
+                    85 to Triple("Paris Saint-Germain", "France", "https://media.api-sports.io/football/teams/85.png"),
+                    80 to Triple("Lyon", "France", "https://media.api-sports.io/football/teams/80.png"),
+                    81 to Triple("Marseille", "France", "https://media.api-sports.io/football/teams/81.png"),
+
                     // Mock ID mapping for testing
                     1 to Triple("Manchester City", "England", "https://media.api-sports.io/football/teams/50.png"),
                     2 to Triple("Arsenal", "England", "https://media.api-sports.io/football/teams/19.png"),
@@ -186,14 +212,39 @@ class TeamDetailViewModel @Inject constructor(
                     4 to Triple("Chelsea", "England", "https://media.api-sports.io/football/teams/18.png")
                 )
 
-                val teamInfo = knownTeams[teamId] ?: Triple("Team #$teamId", "Unknown", null)
+                // ENHANCED FALLBACK: Try to use better default or make API call
+                var teamInfo = knownTeams[teamId]
+
+                if (teamInfo == null) {
+                    println("🔴 DEBUG: UNKNOWN TEAM DETECTED! TeamId: $teamId not found in knownTeams mapping")
+                    println("🔴 DEBUG: Available team IDs in mapping: ${knownTeams.keys.sorted()}")
+
+                    // Try to get team info from a simple teams API call as last resort
+                    try {
+                        println("🔍 DEBUG: Attempting direct teams API call for team $teamId")
+                        val directResponse = apiService.getTeams(leagueId = 39, season = 2025) // Try Premier League
+                        val teams = directResponse.body()?.response
+                        val foundTeam = teams?.find { it.id == teamId }
+
+                        if (foundTeam != null) {
+                            println("🔍 DEBUG: Found team via direct API: ${foundTeam.name}")
+                            teamInfo = Triple(foundTeam.name, foundTeam.country ?: "Unknown", foundTeam.logo ?: "https://media.api-sports.io/football/teams/$teamId.png")
+                        } else {
+                            println("🔴 DEBUG: Team $teamId not found in Premier League, using fallback")
+                            teamInfo = Triple("Team #$teamId", "Unknown", "https://media.api-sports.io/football/teams/$teamId.png")
+                        }
+                    } catch (e: Exception) {
+                        println("🔴 DEBUG: Direct API call failed: ${e.message}")
+                        teamInfo = Triple("Team #$teamId", "Unknown", "https://media.api-sports.io/football/teams/$teamId.png")
+                    }
+                }
 
                 val team = Team(
                     id = teamId,
-                    name = teamInfo.first,
+                    name = teamInfo?.first ?: "Team #$teamId",
                     code = null,
-                    logo = teamInfo.third,
-                    country = teamInfo.second,
+                    logo = teamInfo?.third,
+                    country = teamInfo?.second ?: "Unknown",
                     founded = null,
                     isNational = false,
                     isFavorite = false

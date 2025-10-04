@@ -38,15 +38,30 @@ fun TeamLogo(
     size: Dp = 32.dp,
     contentDescription: String? = null
 ) {
+    println("⚽ DEBUG: TeamLogo for '$teamName' - logoUrl: '$logoUrl'")
+
     Box(
         modifier = modifier.size(size),
         contentAlignment = Alignment.Center
     ) {
         if (!logoUrl.isNullOrBlank()) {
+            println("⚽ DEBUG: Loading team logo for '$teamName' from URL: '$logoUrl'")
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(logoUrl)
                     .size(Size.ORIGINAL)
+                    .listener(
+                        onStart = {
+                            println("⚽ DEBUG: Started loading team logo for $teamName")
+                        },
+                        onSuccess = { _, _ ->
+                            println("⚽ DEBUG: Successfully loaded team logo for $teamName")
+                        },
+                        onError = { _, result ->
+                            println("🔴 DEBUG: Failed to load team logo for $teamName: ${result.throwable.message}")
+                            println("🔴 DEBUG: Team logo URL was: $logoUrl")
+                        }
+                    )
                     .build(),
                 contentDescription = contentDescription ?: "$teamName logo",
                 modifier = Modifier
@@ -56,6 +71,7 @@ fun TeamLogo(
                 error = painterResource(android.R.drawable.ic_menu_gallery)
             )
         } else {
+            println("🔴 DEBUG: No team logo URL available for '$teamName', showing initials placeholder")
             TeamInitialsPlaceholder(
                 teamName = teamName,
                 size = size
@@ -199,17 +215,43 @@ fun CountryFlag(
  * Get fallback logo URL for major competitions
  */
 private fun getFallbackLeagueLogoUrl(leagueName: String): String? {
-    return when (leagueName.lowercase()) {
-        "premier league" -> "https://logos-world.net/wp-content/uploads/2020/06/Premier-League-Logo.png"
-        "uefa champions league", "champions league" -> "https://logos-world.net/wp-content/uploads/2020/06/UEFA-Champions-League-Logo.png"
-        "uefa europa league", "europa league" -> "https://logos-world.net/wp-content/uploads/2020/06/UEFA-Europa-League-Logo.png"
-        "major league soccer", "mls" -> "https://logos-world.net/wp-content/uploads/2020/06/MLS-Logo.png"
-        "fa cup" -> "https://logos-world.net/wp-content/uploads/2020/06/FA-Cup-Logo.png"
-        "la liga" -> "https://logos-world.net/wp-content/uploads/2020/06/La-Liga-Logo.png"
-        "bundesliga" -> "https://logos-world.net/wp-content/uploads/2020/06/Bundesliga-Logo.png"
-        "serie a" -> "https://logos-world.net/wp-content/uploads/2020/06/Serie-A-Logo.png"
-        "ligue 1" -> "https://logos-world.net/wp-content/uploads/2020/06/Ligue-1-Logo.png"
+    println("🏆 DEBUG: Getting fallback logo for league name: '$leagueName'")
+    val fallbackUrl = when (leagueName.lowercase()) {
+        "premier league" -> getMultipleFallbackUrls("premier-league")
+        "uefa champions league", "champions league" -> getMultipleFallbackUrls("champions-league")
+        "uefa europa league", "europa league" -> getMultipleFallbackUrls("europa-league")
+        "major league soccer", "mls" -> getMultipleFallbackUrls("mls")
+        "fa cup" -> getMultipleFallbackUrls("fa-cup")
+        "la liga", "laliga" -> getMultipleFallbackUrls("la-liga")
+        "bundesliga", "1. bundesliga" -> getMultipleFallbackUrls("bundesliga")
+        "serie a" -> getMultipleFallbackUrls("serie-a")
+        "ligue 1" -> getMultipleFallbackUrls("ligue-1")
+        "championship", "efl championship" -> getMultipleFallbackUrls("championship")
+        "world cup" -> getMultipleFallbackUrls("world-cup")
         else -> null
+    }
+    println("🏆 DEBUG: Fallback URL for '$leagueName': $fallbackUrl")
+    return fallbackUrl
+}
+
+private fun getMultipleFallbackUrls(leagueName: String): String {
+    // Try multiple reliable sources for league logos
+    val fallbackSources = listOf(
+        "https://cdn.jsdelivr.net/gh/google/material-design-icons@master/maps/drawable-hdpi/ic_sports_soccer_black_24dp.png", // Generic soccer icon as final fallback
+        "https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Premier_League_Logo.svg/200px-Premier_League_Logo.svg.png", // Wikipedia has reliable logos
+        "https://images.fotmob.com/image_resources/logo/leaguelogo/${leagueName}.png" // FotMob CDN
+    )
+
+    // Return the first URL for now, but this could be enhanced to try multiple URLs
+    return when (leagueName) {
+        "premier-league" -> "https://logoeps.com/wp-content/uploads/2013/03/premier-league-vector-logo.png"
+        "champions-league" -> "https://logoeps.com/wp-content/uploads/2013/03/uefa-champions-league-vector-logo.png"
+        "europa-league" -> "https://logoeps.com/wp-content/uploads/2020/09/uefa-europa-league-vector-logo-2021.png"
+        "la-liga" -> "https://logoeps.com/wp-content/uploads/2013/03/la-liga-vector-logo.png"
+        "bundesliga" -> "https://logoeps.com/wp-content/uploads/2013/04/bundesliga-vector-logo.png"
+        "serie-a" -> "https://logoeps.com/wp-content/uploads/2013/03/serie-a-vector-logo.png"
+        "ligue-1" -> "https://logoeps.com/wp-content/uploads/2013/03/ligue-1-vector-logo.png"
+        else -> fallbackSources[0] // Generic soccer icon
     }
 }
 
@@ -222,13 +264,15 @@ fun LeagueLogo(
     contentDescription: String? = null
 ) {
     val effectiveLogoUrl = if (!logoUrl.isNullOrBlank()) {
-        println("🏆 DEBUG: Using API logo URL for '$leagueName': '$logoUrl'")
+        println("🏆 DEBUG: Using provided logo URL for '$leagueName': '$logoUrl'")
         logoUrl
     } else {
         val fallbackUrl = getFallbackLeagueLogoUrl(leagueName)
-        println("🏆 DEBUG: API logo URL is empty for '$leagueName', using fallback: '$fallbackUrl'")
+        println("🏆 DEBUG: No logo URL provided for '$leagueName', using fallback: '$fallbackUrl'")
         fallbackUrl
     }
+
+    println("🏆 DEBUG: Final effective logo URL for '$leagueName': '$effectiveLogoUrl'")
 
     Box(
         modifier = modifier.size(size),
@@ -249,7 +293,8 @@ fun LeagueLogo(
                         },
                         onError = { _, result ->
                             println("🔴 DEBUG: Failed to load logo for $leagueName: ${result.throwable.message}")
-                            println("🔴 DEBUG: Logo URL was: $effectiveLogoUrl")
+                            println("🔴 DEBUG: Failed logo URL was: $effectiveLogoUrl")
+                            println("🔴 DEBUG: Will show league initials placeholder instead")
                         }
                     )
                     .build(),

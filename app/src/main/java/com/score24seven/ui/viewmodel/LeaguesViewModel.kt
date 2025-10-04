@@ -20,6 +20,7 @@ import com.score24seven.util.Config
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 import javax.inject.Inject
 
 @HiltViewModel
@@ -48,7 +49,7 @@ class LeaguesViewModel @Inject constructor(
                 country = leagueInfo?.second ?: "Unknown",
                 logo = null,
                 flag = getCountryFlag(leagueInfo?.second),
-                season = 2024,
+                season = 2025,
                 round = null,
                 type = "League"
             )
@@ -73,13 +74,21 @@ class LeaguesViewModel @Inject constructor(
 
     private fun loadLeagueData(leagueId: Int, season: Int) {
         println("🏆 DEBUG: LeaguesViewModel - Loading data for league $leagueId, season $season")
-        loadStandings(leagueId, season)
-        loadTopScorers(leagueId, season)
-        loadTeams(leagueId, season)
+
+        viewModelScope.launch {
+            // Load all data in parallel for better performance
+            val standingsDeferred = async { loadStandings(leagueId, season) }
+            val topScorersDeferred = async { loadTopScorers(leagueId, season) }
+            val teamsDeferred = async { loadTeams(leagueId, season) }
+
+            // Wait for all to complete
+            standingsDeferred.await()
+            topScorersDeferred.await()
+            teamsDeferred.await()
+        }
     }
 
-    private fun loadStandings(leagueId: Int, season: Int) {
-        viewModelScope.launch {
+    private suspend fun loadStandings(leagueId: Int, season: Int) {
             _state.update { it.copy(standings = UiState.Loading) }
 
             standingRepository.getLeagueStandings(leagueId, season).collect { resource ->
@@ -97,10 +106,8 @@ class LeaguesViewModel @Inject constructor(
                 _state.update { it.copy(standings = uiState) }
             }
         }
-    }
 
-    private fun loadTopScorers(leagueId: Int, season: Int) {
-        viewModelScope.launch {
+    private suspend fun loadTopScorers(leagueId: Int, season: Int) {
             _state.update { it.copy(topScorers = UiState.Loading) }
 
             topScorerRepository.getTopScorers(leagueId, season).collect { resource ->
@@ -118,10 +125,8 @@ class LeaguesViewModel @Inject constructor(
                 _state.update { it.copy(topScorers = uiState) }
             }
         }
-    }
 
-    private fun loadTeams(leagueId: Int, season: Int) {
-        viewModelScope.launch {
+    private suspend fun loadTeams(leagueId: Int, season: Int) {
             _state.update { it.copy(teams = UiState.Loading) }
 
             teamRepository.getLeagueTeams(leagueId, season).collect { resource ->
@@ -139,7 +144,6 @@ class LeaguesViewModel @Inject constructor(
                 _state.update { it.copy(teams = uiState) }
             }
         }
-    }
 
     fun selectTab(tab: LeagueTab) {
         _state.update { it.copy(selectedTab = tab) }
@@ -148,7 +152,7 @@ class LeaguesViewModel @Inject constructor(
     fun refreshData() {
         val selectedLeague = _state.value.selectedLeague
         if (selectedLeague != null) {
-            val season = selectedLeague.season ?: 2024
+            val season = selectedLeague.season ?: 2025  // Use current season
             loadLeagueData(selectedLeague.id, season)
         }
     }

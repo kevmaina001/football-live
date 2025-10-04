@@ -11,6 +11,7 @@ import com.score24seven.domain.model.Match
 data class HomeScreenState(
     val liveMatches: UiState<List<Match>> = UiState.Loading,
     val todayMatches: UiState<List<Match>> = UiState.Loading,
+    val favoriteMatches: UiState<List<Match>> = UiState.Loading,
     val featuredLeagues: UiState<List<League>> = UiState.Loading,
     val selectedLeague: League? = null,
     val isRefreshing: Boolean = false
