@@ -19,7 +19,8 @@
       "Bash(where java)",
       "Bash(git push:*)",
       "Bash(cp:*)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(adb:*)"
     ],
     "deny": [],
     "ask": []

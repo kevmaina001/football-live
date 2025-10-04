@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.DateRange
@@ -109,9 +109,9 @@ fun Score24SevenBottomNavigation(
             icon = Icons.Default.List
         ),
         BottomNavItem(
-            title = "Settings",
-            route = Screen.Settings.route,
-            icon = Icons.Default.Settings
+            title = "Favorites",
+            route = Screen.Favorites.route,
+            icon = Icons.Default.Favorite
         )
     )
 
