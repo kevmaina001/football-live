@@ -35,7 +35,6 @@ import com.score24seven.ui.viewmodel.SettingsLanguage
 fun SettingsScreen(
     viewModel: SettingsViewModel = viewModel(),
     interstitialAdManager: com.score24seven.ads.InterstitialAdManager? = null,
-    appOpenAdManager: com.score24seven.ads.AppOpenAdManager? = null,
     activity: android.app.Activity? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -308,103 +307,6 @@ fun SettingsScreen(
                 }
             }
 
-            // DEBUG PANEL - App Open Ad Testing
-            if (appOpenAdManager != null && activity != null) {
-                item {
-                    SettingsSection(title = "🐛 APP OPEN AD DEBUG PANEL") {
-                        val adManager = com.score24seven.ads.AdManager
-                        val debugInfo = appOpenAdManager.getDebugInfo()
-
-                        // Ad Status Info
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer
-                            )
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text(
-                                    "📊 App Open Ad Status:",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                debugInfo.forEach { (key, value) ->
-                                    Text("$key: $value", style = MaterialTheme.typography.bodySmall)
-                                }
-                            }
-                        }
-
-                        // Load App Open Ad
-                        SettingsItem(
-                            icon = Icons.Default.Refresh,
-                            title = "Load App Open Ad",
-                            subtitle = "Load a new app open ad",
-                            onClick = {
-                                println("🧪 [DEBUG] Manual app open ad load")
-                                try {
-                                    appOpenAdManager.loadAppOpenAd()
-                                } catch (e: Exception) {
-                                    println("❌ [DEBUG] Error: ${e.message}")
-                                    e.printStackTrace()
-                                }
-                            }
-                        )
-
-                        // Show App Open Ad
-                        SettingsItem(
-                            icon = Icons.Default.PlayArrow,
-                            title = "Show App Open Ad",
-                            subtitle = "Show app open ad if available",
-                            onClick = {
-                                println("🧪 [DEBUG] Manual app open ad trigger")
-                                try {
-                                    appOpenAdManager.showAppOpenAdIfAvailable(activity)
-                                } catch (e: Exception) {
-                                    println("❌ [DEBUG] Error: ${e.message}")
-                                    e.printStackTrace()
-                                }
-                            }
-                        )
-
-                        // Force Reload
-                        SettingsItem(
-                            icon = Icons.Default.Settings,
-                            title = "Force Reload App Open Ad",
-                            subtitle = "Clear cache and reload new ad",
-                            onClick = {
-                                println("🧪 [DEBUG] Force reload app open ad")
-                                try {
-                                    appOpenAdManager.forceReload()
-                                } catch (e: Exception) {
-                                    println("❌ [DEBUG] Error: ${e.message}")
-                                    e.printStackTrace()
-                                }
-                            }
-                        )
-
-                        // Check Ad Status
-                        SettingsItem(
-                            icon = Icons.Default.Check,
-                            title = "Check App Open Ad Status",
-                            subtitle = "Print detailed ad status to logcat",
-                            onClick = {
-                                println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                                println("🧪 [DEBUG] APP OPEN AD STATUS CHECK")
-                                val info = appOpenAdManager.getDebugInfo()
-                                info.forEach { (key, value) ->
-                                    println("$key: $value")
-                                }
-                                println("Activity Valid: ${activity != null}")
-                                println("Manager Valid: ${appOpenAdManager != null}")
-                                println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                            }
-                        )
-                    }
-                }
-            }
 
             // Data & Storage Section
             item {

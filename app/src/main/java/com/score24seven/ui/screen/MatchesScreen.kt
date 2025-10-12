@@ -35,6 +35,8 @@ import com.score24seven.ui.viewmodel.MatchesViewModel
 import com.score24seven.ui.viewmodel.MatchesState
 import com.score24seven.ui.components.CountryFlag
 import com.score24seven.ui.components.TeamLogo
+import com.score24seven.ads.BannerAdManager
+import com.score24seven.ads.NativeAdManager
 import com.score24seven.ui.components.LeagueLogo
 import com.score24seven.ui.components.ModernMatchCard
 import com.score24seven.util.Config
@@ -415,6 +417,16 @@ fun CompetitionMatchesView(
                 )
             }
         }
+
+        // Banner Ad 1
+        item {
+            BannerAdManager.BannerAdView()
+        }
+        // Native Ad
+        item {
+            NativeAdManager.SimpleNativeAdCard()
+        }
+
 
         when (matches) {
             is UiState.Loading -> {

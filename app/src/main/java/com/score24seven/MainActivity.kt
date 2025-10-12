@@ -37,13 +37,30 @@ import androidx.navigation.compose.rememberNavController
 import com.score24seven.ui.design.theme.Score24SevenTheme
 import com.score24seven.ui.navigation.Score24SevenNavigation
 import com.score24seven.ui.navigation.Screen
+import com.score24seven.ads.AppOpenAdManager
+import com.score24seven.ads.InterstitialAdManager
 import dagger.hilt.android.AndroidEntryPoint
+import android.os.Handler
+import android.os.Looper
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private lateinit var interstitialAdManager: InterstitialAdManager
+    private lateinit var appOpenAdManager: AppOpenAdManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        // Initialize interstitial ad manager
+        interstitialAdManager = InterstitialAdManager(this)
+
+        // Initialize app open ad manager
+        appOpenAdManager = AppOpenAdManager.getInstance(this)
+
+        // Show App Open Ad with delay to allow SDK initialization
+        showAppOpenAdWithDelay()
 
         setContent {
             val isDarkMode by Score24SevenApplication.preferencesManager.isDarkMode.collectAsState()
@@ -58,34 +75,59 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Score24SevenApp()
+                    Score24SevenApp(
+                        interstitialAdManager = interstitialAdManager,
+                        appOpenAdManager = appOpenAdManager
+                    )
                 }
             }
         }
     }
+
+    private fun showAppOpenAdWithDelay() {
+        println("📱 MainActivity: showAppOpenAdWithDelay() called - will load ad after SDK init")
+        // Wait for AdMob SDK to initialize before loading ad
+        Handler(Looper.getMainLooper()).postDelayed({
+            println("📱 MainActivity: 2 second delay complete - loading App Open Ad")
+            appOpenAdManager.loadAppOpenAd()
+
+            // Show ad after another 2 seconds to ensure it's loaded
+            Handler(Looper.getMainLooper()).postDelayed({
+                println("📱 MainActivity: Attempting to show App Open Ad")
+                appOpenAdManager.showAppOpenAdIfAvailable(this)
+            }, 2000)
+        }, 2000) // 2 seconds delay to allow SDK initialization
+    }
 }
 
 @Composable
-fun Score24SevenApp() {
+fun Score24SevenApp(
+    interstitialAdManager: InterstitialAdManager? = null,
+    appOpenAdManager: AppOpenAdManager? = null
+) {
     val navController = rememberNavController()
 
     Scaffold(
         bottomBar = {
             Score24SevenBottomNavigation(
-                navController = navController
+                navController = navController,
+                interstitialAdManager = interstitialAdManager
             )
         }
     ) { paddingValues ->
         Score24SevenNavigation(
             navController = navController,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(paddingValues),
+            interstitialAdManager = interstitialAdManager,
+            appOpenAdManager = appOpenAdManager
         )
     }
 }
 
 @Composable
 fun Score24SevenBottomNavigation(
-    navController: androidx.navigation.NavHostController
+    navController: androidx.navigation.NavHostController,
+    interstitialAdManager: InterstitialAdManager? = null
 ) {
     val items = listOf(
         BottomNavItem(
@@ -132,10 +174,10 @@ fun Score24SevenBottomNavigation(
                 onClick = {
                     navController.navigate(item.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                            saveState = false
                         }
                         launchSingleTop = true
-                        restoreState = true
+                        restoreState = false
                     }
                 }
             )

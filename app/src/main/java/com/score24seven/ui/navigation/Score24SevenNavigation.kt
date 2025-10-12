@@ -28,7 +28,9 @@ import com.score24seven.ui.screen.SearchScreen
 @Composable
 fun Score24SevenNavigation(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    interstitialAdManager: com.score24seven.ads.InterstitialAdManager? = null,
+    appOpenAdManager: com.score24seven.ads.AppOpenAdManager? = null
 ) {
     NavHost(
         navController = navController,
@@ -73,7 +75,12 @@ fun Score24SevenNavigation(
         }
 
         composable(Screen.Settings.route) {
-            SettingsScreen()
+            val context = androidx.compose.ui.platform.LocalContext.current
+            SettingsScreen(
+                appOpenAdManager = appOpenAdManager,
+                interstitialAdManager = interstitialAdManager,
+                activity = context as? android.app.Activity
+            )
         }
 
         composable(Screen.Favorites.route) {
@@ -103,6 +110,26 @@ fun Score24SevenNavigation(
             )
         ) { backStackEntry ->
             val matchId = backStackEntry.arguments?.getInt("matchId") ?: return@composable
+            val context = androidx.compose.ui.platform.LocalContext.current
+
+            // Trigger ad when screen loads with full error protection
+            androidx.compose.runtime.LaunchedEffect(matchId) {
+                try {
+                    println("🔍 [NAV] MatchDetail - Attempting to show interstitial ad")
+                    println("🔍 [NAV] Context: ${context::class.simpleName}, Is Activity: ${context is android.app.Activity}")
+
+                    if (context is android.app.Activity && interstitialAdManager != null) {
+                        kotlinx.coroutines.delay(500) // Small delay to ensure screen is ready
+                        interstitialAdManager.showInterstitialAd(context)
+                    } else {
+                        println("⚠️ [NAV] Cannot show ad - Context: ${context is android.app.Activity}, Manager: ${interstitialAdManager != null}")
+                    }
+                } catch (e: Exception) {
+                    println("❌ [NAV] Error showing interstitial ad: ${e.message}")
+                    e.printStackTrace()
+                }
+            }
+
             NewMatchDetailScreen(
                 matchId = matchId,
                 onNavigateBack = { navController.popBackStack() },
@@ -123,6 +150,21 @@ fun Score24SevenNavigation(
             val leagueId = backStackEntry.arguments?.getInt("leagueId") ?: return@composable
             val season = backStackEntry.arguments?.getInt("season") ?: return@composable
             val leagueName = backStackEntry.arguments?.getString("leagueName") ?: return@composable
+            val context = androidx.compose.ui.platform.LocalContext.current
+
+            // Trigger ad when screen loads with full error protection
+            androidx.compose.runtime.LaunchedEffect(leagueId) {
+                try {
+                    if (context is android.app.Activity && interstitialAdManager != null) {
+                        kotlinx.coroutines.delay(500)
+                        interstitialAdManager.showInterstitialAd(context)
+                    }
+                } catch (e: Exception) {
+                    println("❌ [NAV] LeagueDetail ad error: ${e.message}")
+                    e.printStackTrace()
+                }
+            }
+
             LeagueDetailsScreen(
                 leagueId = leagueId,
                 season = season,
@@ -138,6 +180,21 @@ fun Score24SevenNavigation(
             )
         ) { backStackEntry ->
             val teamId = backStackEntry.arguments?.getInt("teamId") ?: return@composable
+            val context = androidx.compose.ui.platform.LocalContext.current
+
+            // Trigger ad when screen loads (safe pattern)
+            androidx.compose.runtime.LaunchedEffect(teamId) {
+                try {
+                if (context is android.app.Activity && interstitialAdManager != null) {
+                    kotlinx.coroutines.delay(500)
+                        interstitialAdManager.showInterstitialAd(context)
+                }
+                } catch (e: Exception) {
+                    println("❌ [NAV] TeamDetail ad error: ${e.message}")
+                    e.printStackTrace()
+                }
+            }
+
             TeamDetailScreen(
                 teamId = teamId,
                 onNavigateBack = { navController.popBackStack() }

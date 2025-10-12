@@ -28,6 +28,7 @@ import com.score24seven.domain.model.isLive
 import com.score24seven.ui.state.MatchDetailAction
 import com.score24seven.ui.state.UiState
 import com.score24seven.ui.viewmodel.MatchDetailViewModel
+import com.score24seven.ads.BannerAdManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -151,6 +152,11 @@ fun MatchDetailScreen(
                                 }
                             }
                         }
+                    }
+
+                    // Banner Ad 1
+                    item {
+                        BannerAdManager.BannerAdView()
                     }
 
                     item {
@@ -304,6 +310,11 @@ fun MatchDetailScreen(
                     // - Lineups
                     // - Head to Head
 
+                    // Banner Ad 2
+                    item {
+                        BannerAdManager.BannerAdView()
+                    }
+
                     item {
                         Card {
                             Column(
@@ -354,6 +365,7 @@ fun MatchDetailScreen(
                             }
                         }
                     }
+
                 }
             }
             is UiState.Error -> {

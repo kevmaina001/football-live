@@ -30,6 +30,10 @@ import com.score24seven.ui.state.UiState
 import com.score24seven.ui.viewmodel.LeaguesViewModel
 import com.score24seven.ui.viewmodel.LeagueTab
 import com.score24seven.ui.components.TeamLogo
+import com.score24seven.ads.BannerAdManager
+import com.score24seven.ads.NativeAdManager
+import com.score24seven.util.TeamNameUtils
+import androidx.compose.ui.text.style.TextOverflow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +73,16 @@ fun LeaguesScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
+
+            // Banner Ad
+            item {
+                BannerAdManager.BannerAdView()
+            }
+            // Native Ad
+            item {
+                NativeAdManager.SimpleNativeAdCard()
+            }
+
 
             val leaguesState = state.leagues
             println("🔥 DEBUG: LeaguesScreen - LeaguesState type: ${leaguesState::class.simpleName}")
@@ -420,6 +434,11 @@ fun StandingsContent(
                         StandingsHeader()
                     }
 
+                    // Banner Ad in Standings
+                    item {
+                        BannerAdManager.BannerAdView()
+                    }
+
                     itemsIndexed(standings) { _, standing ->
                         StandingRow(
                             standing = standing,
@@ -468,68 +487,79 @@ private fun StandingsHeader() {
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
-        modifier = Modifier.padding(vertical = 8.dp)
+        modifier = Modifier.padding(vertical = 4.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(horizontal = 4.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Position
             Text(
                 text = "#",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(24.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier.width(20.dp),
+                textAlign = TextAlign.Center,
+                fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.75f
             )
+            // Team - more space
             Text(
                 text = "Team",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).padding(start = 2.dp),
+                fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.75f
             )
+            // Compact stats
             Text(
                 text = "P",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(32.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier.width(20.dp),
+                textAlign = TextAlign.Center,
+                fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.75f
             )
             Text(
                 text = "W",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(32.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier.width(20.dp),
+                textAlign = TextAlign.Center,
+                fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.75f
             )
             Text(
                 text = "D",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(32.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier.width(20.dp),
+                textAlign = TextAlign.Center,
+                fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.75f
             )
             Text(
                 text = "L",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(32.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier.width(20.dp),
+                textAlign = TextAlign.Center,
+                fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.75f
             )
             Text(
                 text = "GD",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(40.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier.width(26.dp),
+                textAlign = TextAlign.Center,
+                fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.75f
             )
             Text(
                 text = "Pts",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(40.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier.width(26.dp),
+                textAlign = TextAlign.Center,
+                fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.75f
             )
         }
     }
@@ -552,13 +582,13 @@ private fun StandingRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(horizontal = 4.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Position
+            // Position - ultra compact
             Box(
                 modifier = Modifier
-                    .size(24.dp)
+                    .size(20.dp)
                     .background(
                         getPositionBackgroundColor(standing.rank),
                         CircleShape
@@ -569,69 +599,82 @@ private fun StandingRow(
                     text = standing.rank.toString(),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = Color.White,
+                    fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.7f
                 )
             }
 
-            // Team logo and name
+            // Team logo and name - maximum space
             Row(
-                modifier = Modifier.weight(1f).padding(start = 8.dp),
+                modifier = Modifier.weight(1f).padding(start = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
+                // Always show team logo with proper fallback
+                val logoUrl = standing.team.logo?.takeIf { it.isNotBlank() }
+                    ?: "https://media.api-sports.io/football/teams/${standing.team.id}.png"
+
                 TeamLogo(
-                    logoUrl = standing.team.logo?.takeIf { it.isNotBlank() }
-                        ?: "https://media.api-sports.io/football/teams/${standing.team.id}.png",
+                    logoUrl = logoUrl,
                     teamName = standing.team.name,
-                    size = 20.dp
+                    size = 14.dp
                 )
                 Text(
-                    text = standing.team.name,
+                    text = TeamNameUtils.getAbbreviatedName(standing.team.name, maxLength = 13),
                     style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.8f
                 )
             }
 
-            // Stats
+            // Stats - ultra compact
             Text(
                 text = standing.all.played.toString(),
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.width(32.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier.width(20.dp),
+                textAlign = TextAlign.Center,
+                fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.75f
             )
             Text(
                 text = standing.all.win.toString(),
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.width(32.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier.width(20.dp),
+                textAlign = TextAlign.Center,
+                fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.75f
             )
             Text(
                 text = standing.all.draw.toString(),
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.width(32.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier.width(20.dp),
+                textAlign = TextAlign.Center,
+                fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.75f
             )
             Text(
                 text = standing.all.lose.toString(),
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.width(32.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier.width(20.dp),
+                textAlign = TextAlign.Center,
+                fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.75f
             )
             Text(
                 text = if (standing.goalsDiff >= 0) "+${standing.goalsDiff}" else "${standing.goalsDiff}",
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.width(40.dp),
+                modifier = Modifier.width(26.dp),
                 textAlign = TextAlign.Center,
                 color = if (standing.goalsDiff >= 0) Color.Green else Color.Red,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.75f
             )
             Text(
                 text = standing.points.toString(),
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.width(40.dp),
+                modifier = Modifier.width(26.dp),
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.8f
             )
         }
     }

@@ -45,7 +45,6 @@ import com.score24seven.ui.components.TeamLogo
 import com.score24seven.ui.navigation.Screen
 import com.score24seven.util.Config
 import com.score24seven.ads.BannerAdManager
-import com.score24seven.ads.NativeAdManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,11 +147,6 @@ fun HomeScreen(
                 }
             }
         }
-        // Native Ad
-        item {
-            NativeAdManager.SimpleNativeAdCard()
-        }
-
 
         // Banner Ad
         item {
@@ -512,7 +506,7 @@ fun StatsOverview(
                 icon = Icons.Default.PlayArrow,
                 color = Color(0xFFE53E3E),
                 onClick = {
-                    navController?.navigate(Screen.LiveTV.route) {
+                    navController?.navigate(Screen.Matches.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
@@ -527,15 +521,7 @@ fun StatsOverview(
                 value = favoritesCount.toString(),
                 icon = Icons.Default.Favorite,
                 color = Color(0xFFE91E63),
-                onClick = {
-                    navController?.navigate(Screen.Favorites.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
+                onClick = null
             )
             StatsCard(
                 modifier = Modifier.weight(1f),

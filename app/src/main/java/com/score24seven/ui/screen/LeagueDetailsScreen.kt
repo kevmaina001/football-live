@@ -30,6 +30,10 @@ import com.score24seven.data.model.SimpleTopScorer
 import coil.compose.AsyncImage
 import java.text.SimpleDateFormat
 import java.util.*
+import com.score24seven.ui.components.TeamLogo
+import com.score24seven.util.TeamNameUtils
+import androidx.compose.ui.text.style.TextOverflow
+import com.score24seven.ads.BannerAdManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,7 +87,12 @@ fun LeagueDetailsScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Banner Ad
+        BannerAdManager.BannerAdView()
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Tab Content
         when (selectedTabIndex) {
@@ -267,55 +276,70 @@ private fun StandingTab(
         else -> {
             LazyColumn {
                 item {
-                    // Header
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    // Header - ultra compact
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        ),
+                        modifier = Modifier.padding(vertical = 4.dp)
                     ) {
-                        Text(
-                            text = "Pos",
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.width(40.dp)
-                        )
-                        Text(
-                            text = "Team",
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(
-                            text = "P",
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.width(30.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "W",
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.width(30.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "D",
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.width(30.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "L",
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.width(30.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "Pts",
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.width(40.dp),
-                            textAlign = TextAlign.Center
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "#",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.width(22.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 11.sp
+                            )
+                            Text(
+                                text = "Team",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f).padding(start = 2.dp),
+                                fontSize = 11.sp
+                            )
+                            Text(
+                                text = "P",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.width(22.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 11.sp
+                            )
+                            Text(
+                                text = "W",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.width(22.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 11.sp
+                            )
+                            Text(
+                                text = "D",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.width(22.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 11.sp
+                            )
+                            Text(
+                                text = "L",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.width(22.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 11.sp
+                            )
+                            Text(
+                                text = "Pts",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.width(28.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 11.sp
+                            )
+                        }
                     }
-                    HorizontalDivider()
                 }
 
                 items(standings) { standing ->
@@ -331,46 +355,97 @@ private fun StandingRow(standing: SimpleStanding) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "${standing.rank}",
-            modifier = Modifier.width(40.dp),
-            textAlign = TextAlign.Center
-        )
-        Text(
-            text = standing.team?.name ?: "Unknown",
-            modifier = Modifier.weight(1f),
-            maxLines = 1
-        )
+        // Position badge with color coding
+        Box(
+            modifier = Modifier
+                .size(22.dp)
+                .background(
+                    getPositionBackgroundColor(standing.rank),
+                    CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "${standing.rank}",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
+
+        // Team logo and name
+        Row(
+            modifier = Modifier.weight(1f).padding(start = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            // Team logo with fallback
+            val teamName = standing.team?.name ?: "Unknown"
+            val logoUrl = standing.team?.logo?.takeIf { it.isNotBlank() }
+                ?: "https://media.api-sports.io/football/teams/${standing.team?.id}.png"
+
+            TeamLogo(
+                logoUrl = logoUrl,
+                teamName = teamName,
+                size = 16.dp
+            )
+
+            Text(
+                text = TeamNameUtils.getAbbreviatedName(teamName, maxLength = 13),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
+        // Stats columns - ultra compact
         Text(
             text = "${standing.all?.played ?: 0}",
-            modifier = Modifier.width(30.dp),
-            textAlign = TextAlign.Center
+            modifier = Modifier.width(22.dp),
+            textAlign = TextAlign.Center,
+            fontSize = 11.sp
         )
         Text(
             text = "${standing.all?.win ?: 0}",
-            modifier = Modifier.width(30.dp),
-            textAlign = TextAlign.Center
+            modifier = Modifier.width(22.dp),
+            textAlign = TextAlign.Center,
+            fontSize = 11.sp
         )
         Text(
             text = "${standing.all?.draw ?: 0}",
-            modifier = Modifier.width(30.dp),
-            textAlign = TextAlign.Center
+            modifier = Modifier.width(22.dp),
+            textAlign = TextAlign.Center,
+            fontSize = 11.sp
         )
         Text(
             text = "${standing.all?.lose ?: 0}",
-            modifier = Modifier.width(30.dp),
-            textAlign = TextAlign.Center
+            modifier = Modifier.width(22.dp),
+            textAlign = TextAlign.Center,
+            fontSize = 11.sp
         )
         Text(
             text = "${standing.points}",
-            modifier = Modifier.width(40.dp),
+            modifier = Modifier.width(28.dp),
             textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.primary
         )
+    }
+}
+
+// Position color helper
+private fun getPositionBackgroundColor(position: Int): Color {
+    return when (position) {
+        in 1..4 -> Color(0xFF4CAF50) // Champions League - green
+        in 5..6 -> Color(0xFFFFC107) // Europa League - amber
+        in 18..20 -> Color(0xFFF44336) // Relegation - red
+        else -> Color(0xFF757575) // Default - gray
     }
 }
 

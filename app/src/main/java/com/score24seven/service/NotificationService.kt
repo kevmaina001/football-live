@@ -1,5 +1,6 @@
 /*
  * Notification service for match updates
+ * FIXED: Only sends notifications on actual events (goals, red cards, match end)
  */
 
 package com.score24seven.service
@@ -15,7 +16,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.score24seven.MainActivity
 import com.score24seven.R
+import com.score24seven.domain.model.EventType
 import com.score24seven.domain.model.Match
+import com.score24seven.domain.model.isFinished
 import com.score24seven.domain.model.isLive
 import com.score24seven.domain.repository.FavoritesRepository
 import com.score24seven.util.PreferencesManager
@@ -28,6 +31,13 @@ import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 import javax.inject.Singleton
 
+// Track match state for detecting actual events
+data class MatchState(
+    val score: Pair<Int?, Int?>,
+    val isFinished: Boolean,
+    val redCardsCount: Int
+)
+
 @Singleton
 class NotificationService @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -37,7 +47,8 @@ class NotificationService @Inject constructor(
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val notificationManager = NotificationManagerCompat.from(context)
-    private val previousScores = mutableMapOf<Int, Pair<Int?, Int?>>() // matchId to (home, away) score
+    private val previousMatchStates = mutableMapOf<Int, MatchState>()
+    private val notifiedMatchStarts = mutableSetOf<Int>()
 
     companion object {
         private const val CHANNEL_ID_LIVE_SCORES = "live_scores"
@@ -57,28 +68,59 @@ class NotificationService @Inject constructor(
             .launchIn(serviceScope)
     }
 
-    private fun checkForMatchUpdates(matches: List<Match>) {
-        // Check if notifications are enabled globally
+    fun checkForMatchUpdates(matches: List<Match>) {
         if (!preferencesManager.getNotificationsEnabled()) return
 
         matches.forEach { match ->
-            when {
-                match.isLive() && preferencesManager.getLiveScoreNotifications() -> {
-                    // Check for score changes first
-                    if (hasMatchScoreChanged(match)) {
-                        sendScoreUpdateNotification(match)
-                    } else {
-                        sendLiveMatchNotification(match)
-                    }
+            val currentScore = match.score?.let { it.home to it.away }
+            val currentRedCards = match.events.count { it.type == EventType.RED_CARD }
+            val currentState = MatchState(
+                score = currentScore ?: (null to null),
+                isFinished = match.isFinished(),
+                redCardsCount = currentRedCards
+            )
+
+            val previousState = previousMatchStates[match.id]
+
+            if (previousState == null) {
+                previousMatchStates[match.id] = currentState
+                println("📝 DEBUG: NotificationService - First time tracking match ${match.id}, storing initial state")
+            } else {
+                if (currentState.score != previousState.score &&
+                    currentScore != null &&
+                    match.isLive() &&
+                    preferencesManager.getLiveScoreNotifications()) {
+                    println("⚽ DEBUG: NotificationService - GOAL detected for match ${match.id}")
+                    sendGoalNotification(match)
                 }
-                isMatchStartingSoon(match) && preferencesManager.getMatchReminders() -> {
-                    sendUpcomingMatchNotification(match)
+
+                if (currentState.redCardsCount > previousState.redCardsCount &&
+                    match.isLive() &&
+                    preferencesManager.getLiveScoreNotifications()) {
+                    println("🟥 DEBUG: NotificationService - RED CARD detected for match ${match.id}")
+                    sendRedCardNotification(match)
                 }
+
+                if (currentState.isFinished && !previousState.isFinished &&
+                    preferencesManager.getLiveScoreNotifications()) {
+                    println("🏁 DEBUG: NotificationService - MATCH END detected for match ${match.id}")
+                    sendMatchEndNotification(match)
+                }
+
+                previousMatchStates[match.id] = currentState
+            }
+
+            if (isMatchStartingSoon(match) &&
+                !notifiedMatchStarts.contains(match.id) &&
+                preferencesManager.getMatchReminders()) {
+                println("⏰ DEBUG: NotificationService - Match starting soon: ${match.id}")
+                sendUpcomingMatchNotification(match)
+                notifiedMatchStarts.add(match.id)
             }
         }
     }
 
-    private fun sendLiveMatchNotification(match: Match) {
+    private fun sendGoalNotification(match: Match) {
         if (!hasNotificationPermission()) return
 
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -95,16 +137,79 @@ class NotificationService @Inject constructor(
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_LIVE_SCORES)
             .setSmallIcon(R.drawable.score24seven_logo)
-            .setContentTitle("🔴 LIVE: ${match.homeTeam.name} vs ${match.awayTeam.name}")
+            .setContentTitle("⚽ GOAL! ${match.homeTeam.name} vs ${match.awayTeam.name}")
+            .setContentText("${match.score?.home ?: 0} - ${match.score?.away ?: 0}")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setVibrate(longArrayOf(0, 300, 100, 300, 100, 300))
+            .build()
+
+        try {
+            notificationManager.notify(NOTIFICATION_ID_BASE + match.id, notification)
+        } catch (e: SecurityException) {
+            println("❌ ERROR: Notification permission not granted")
+        }
+    }
+
+    private fun sendRedCardNotification(match: Match) {
+        if (!hasNotificationPermission()) return
+
+        val intent = Intent(context, MainActivity::class.java).apply {
+            putExtra("match_id", match.id)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            match.id,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID_LIVE_SCORES)
+            .setSmallIcon(R.drawable.score24seven_logo)
+            .setContentTitle("🟥 RED CARD! ${match.homeTeam.name} vs ${match.awayTeam.name}")
             .setContentText("${match.score?.home ?: 0} - ${match.score?.away ?: 0} • ${match.league.name}")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setVibrate(longArrayOf(0, 500, 200, 500))
             .build()
 
         try {
-            notificationManager.notify(NOTIFICATION_ID_BASE + match.id, notification)
+            notificationManager.notify(NOTIFICATION_ID_BASE + match.id + 10000, notification)
+        } catch (e: SecurityException) {
+            println("❌ ERROR: Notification permission not granted")
+        }
+    }
+
+    private fun sendMatchEndNotification(match: Match) {
+        if (!hasNotificationPermission()) return
+
+        val intent = Intent(context, MainActivity::class.java).apply {
+            putExtra("match_id", match.id)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            match.id,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID_LIVE_SCORES)
+            .setSmallIcon(R.drawable.score24seven_logo)
+            .setContentTitle("🏁 FULL TIME: ${match.homeTeam.name} vs ${match.awayTeam.name}")
+            .setContentText("Final Score: ${match.score?.home ?: 0} - ${match.score?.away ?: 0}")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        try {
+            notificationManager.notify(NOTIFICATION_ID_BASE + match.id + 20000, notification)
         } catch (e: SecurityException) {
             println("❌ ERROR: Notification permission not granted")
         }
@@ -135,39 +240,7 @@ class NotificationService @Inject constructor(
             .build()
 
         try {
-            notificationManager.notify(NOTIFICATION_ID_BASE + match.id + 10000, notification)
-        } catch (e: SecurityException) {
-            println("❌ ERROR: Notification permission not granted")
-        }
-    }
-
-    private fun sendScoreUpdateNotification(match: Match) {
-        if (!hasNotificationPermission()) return
-
-        val intent = Intent(context, MainActivity::class.java).apply {
-            putExtra("match_id", match.id)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            match.id,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID_LIVE_SCORES)
-            .setSmallIcon(R.drawable.score24seven_logo)
-            .setContentTitle("⚽ Goal! ${match.homeTeam.name} vs ${match.awayTeam.name}")
-            .setContentText("${match.score?.home ?: 0} - ${match.score?.away ?: 0}")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .setVibrate(longArrayOf(0, 300, 100, 300, 100, 300))
-            .build()
-
-        try {
-            notificationManager.notify(NOTIFICATION_ID_BASE + match.id + 20000, notification)
+            notificationManager.notify(NOTIFICATION_ID_BASE + match.id + 30000, notification)
         } catch (e: SecurityException) {
             println("❌ ERROR: Notification permission not granted")
         }
@@ -185,43 +258,24 @@ class NotificationService @Inject constructor(
     }
 
     private fun isMatchStartingSoon(match: Match): Boolean {
-        // Check if match starts within 15 minutes
         val currentTime = System.currentTimeMillis() / 1000
         val matchTime = match.fixture.timestamp
         val timeDiff = matchTime - currentTime
-        return timeDiff in 1..900 // 15 minutes in seconds
-    }
-
-    private fun hasMatchScoreChanged(match: Match): Boolean {
-        val currentScore = match.score?.let { it.home to it.away } ?: return false
-        val previousScore = previousScores[match.id]
-
-        return if (previousScore == null) {
-            // First time seeing this match, store its score
-            previousScores[match.id] = currentScore
-            false
-        } else {
-            // Compare with previous score
-            val hasChanged = previousScore != currentScore
-            if (hasChanged) {
-                // Update stored score
-                previousScores[match.id] = currentScore
-                println("⚽ DEBUG: Score changed for match ${match.id}: $previousScore -> $currentScore")
-            }
-            hasChanged
-        }
+        return timeDiff in 1..900
     }
 
     fun cancelNotificationForMatch(matchId: Int) {
         notificationManager.cancel(NOTIFICATION_ID_BASE + matchId)
         notificationManager.cancel(NOTIFICATION_ID_BASE + matchId + 10000)
         notificationManager.cancel(NOTIFICATION_ID_BASE + matchId + 20000)
-        // Clean up score tracking
-        previousScores.remove(matchId)
+        notificationManager.cancel(NOTIFICATION_ID_BASE + matchId + 30000)
+        previousMatchStates.remove(matchId)
+        notifiedMatchStarts.remove(matchId)
     }
 
     fun cancelAllNotifications() {
         notificationManager.cancelAll()
-        previousScores.clear()
+        previousMatchStates.clear()
+        notifiedMatchStarts.clear()
     }
 }

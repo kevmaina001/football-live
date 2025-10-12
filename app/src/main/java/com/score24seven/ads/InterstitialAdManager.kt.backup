@@ -1,0 +1,204 @@
+/*
+ * Interstitial Ad Manager - Handles interstitial ad loading and display
+ * Based on reference project implementation with click counter mechanism
+ * Optimized with caching, preloading, and better error handling
+ */
+
+package com.score24seven.ads
+
+import android.app.Activity
+import android.content.Context
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.score24seven.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+class InterstitialAdManager(private val context: Context) {
+
+    companion object {
+        private var mInterstitialAd: InterstitialAd? = null
+        private var counter = 0
+        private var isLoading = false
+        private var loadAttempts = 0
+        private const val MAX_LOAD_ATTEMPTS = 3
+        private const val RETRY_DELAY_MS = 5000L // 5 seconds
+        private var lastAdShowTime = 0L
+        private const val MIN_AD_INTERVAL_MS = 3000L // 3 seconds minimum between ads (for testing - increase to 30000-60000 for production)
+
+        // Thread-safe flag to prevent rapid-fire calls (same as reference implementation)
+        @Volatile
+        private var shouldEdit = true
+    }
+
+    init {
+        loadInterstitialAd()
+    }
+
+    /**
+     * Load interstitial ad with retry mechanism
+     */
+    private fun loadInterstitialAd() {
+        if (!AdManager.adsEnabled || isLoading) return
+
+        isLoading = true
+        val adRequest = AdRequest.Builder().build()
+
+        println("📱 Loading interstitial ad (attempt ${loadAttempts + 1}/$MAX_LOAD_ATTEMPTS)")
+
+        InterstitialAd.load(
+            context,
+            context.getString(R.string.admob_inters),
+            adRequest,
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                    mInterstitialAd = interstitialAd
+                    isLoading = false
+                    loadAttempts = 0 // Reset attempts on successful load
+                    println("✅ Interstitial ad loaded successfully and cached")
+
+                    // Set up callbacks for when ad is dismissed
+                    interstitialAd.fullScreenContentCallback = object : FullScreenContentCallback() {
+                        override fun onAdDismissedFullScreenContent() {
+                            println("📱 Interstitial ad dismissed")
+                            mInterstitialAd = null
+                            // Preload next ad immediately for better UX
+                            loadInterstitialAd()
+                        }
+
+                        override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                            println("❌ Interstitial ad failed to show: ${adError.message}")
+                            mInterstitialAd = null
+                            loadInterstitialAd()
+                        }
+
+                        override fun onAdShowedFullScreenContent() {
+                            println("📱 Interstitial ad shown successfully")
+                            lastAdShowTime = System.currentTimeMillis()
+                        }
+                    }
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    println("❌ Interstitial ad failed to load: ${loadAdError.message} (Code: ${loadAdError.code})")
+                    mInterstitialAd = null
+                    isLoading = false
+                    loadAttempts++
+
+                    // Retry with exponential backoff if under max attempts
+                    if (loadAttempts < MAX_LOAD_ATTEMPTS) {
+                        val delayMs = RETRY_DELAY_MS * loadAttempts
+                        println("🔄 Retrying in ${delayMs/1000} seconds...")
+                        CoroutineScope(Dispatchers.Main).launch {
+                            delay(delayMs)
+                            loadInterstitialAd()
+                        }
+                    } else {
+                        println("⚠️ Max retry attempts reached. Will retry on next show request.")
+                        loadAttempts = 0 // Reset for next manual trigger
+                    }
+                }
+            }
+        )
+    }
+
+    /**
+     * Show interstitial ad based on click counter with frequency control
+     * Call this method when user performs actions (navigate, click, etc.)
+     * Using thread-safe pattern from reference implementation
+     */
+    fun showInterstitialAd(activity: Activity) {
+        println("🎯 showInterstitialAd() called - shouldEdit: $shouldEdit, adsEnabled: ${AdManager.adsEnabled}")
+
+        if (!AdManager.adsEnabled) {
+            println("⚠️ Ads disabled")
+            return
+        }
+
+        // Thread-safe check - prevent rapid-fire calls
+        if (shouldEdit) {
+            counter++
+            shouldEdit = false
+            println("📊 Click counter: $counter / ${AdManager.clicksBeforeInterstitial}")
+
+            if (counter >= AdManager.clicksBeforeInterstitial) {
+                // Check minimum time interval between ads
+                val currentTime = System.currentTimeMillis()
+                val timeSinceLastAd = currentTime - lastAdShowTime
+
+                if (timeSinceLastAd < MIN_AD_INTERVAL_MS && lastAdShowTime > 0) {
+                    val waitTime = (MIN_AD_INTERVAL_MS - timeSinceLastAd)/1000
+                    println("⏱️ Too soon to show another ad. Wait ${waitTime}s")
+                    // Reset flag after delay
+                    resetShouldEditFlag()
+                    return
+                }
+
+                if (mInterstitialAd != null) {
+                    println("📱 Ad ready - SHOWING NOW!")
+                    counter = 0
+                    mInterstitialAd?.show(activity)
+                } else {
+                    println("⚠️ Interstitial ad not ready yet. Loading now...")
+                    counter = 0
+                    loadInterstitialAd() // Try loading if not available
+                }
+            }
+        }
+
+        // Reset the flag after 500ms delay (same as reference implementation)
+        resetShouldEditFlag()
+    }
+
+    /**
+     * Reset shouldEdit flag after delay to allow next ad trigger
+     */
+    private fun resetShouldEditFlag() {
+        Thread {
+            try {
+                Thread.sleep(500) // 500ms delay like reference implementation
+                shouldEdit = true
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
+            }
+        }.start()
+    }
+
+    /**
+     * Show interstitial ad immediately without counter check
+     * Use for specific actions that should always show an ad
+     */
+    fun showInterstitialAdNow(activity: Activity) {
+        if (!AdManager.adsEnabled) return
+
+        if (mInterstitialAd != null) {
+            mInterstitialAd?.show(activity)
+            counter = 0
+            println("📱 Showing interstitial ad (immediate)")
+        } else {
+            println("⚠️ Interstitial ad not ready")
+            loadInterstitialAd()
+        }
+    }
+
+    /**
+     * Reset counter manually if needed
+     */
+    fun resetCounter() {
+        counter = 0
+        println("🔄 Interstitial counter reset")
+    }
+
+    /**
+     * Check if ad is ready to be shown
+     */
+    fun isAdReady(): Boolean {
+        return mInterstitialAd != null
+    }
+}

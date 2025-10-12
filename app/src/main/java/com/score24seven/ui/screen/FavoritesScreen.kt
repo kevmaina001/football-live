@@ -34,6 +34,8 @@ import com.score24seven.ui.components.LoadingState
 import com.score24seven.ui.components.EmptyState
 import com.score24seven.ui.state.UiState
 import com.score24seven.ui.viewmodel.FavoritesViewModel
+import com.score24seven.ads.BannerAdManager
+import com.score24seven.ads.NativeAdManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -125,6 +127,16 @@ fun FavoritesScreen(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // Banner Ad at top
+                        item {
+                            BannerAdManager.BannerAdView()
+                        }
+                        // Native Ad
+                        item {
+                            NativeAdManager.SimpleNativeAdCard()
+                        }
+
+
                         items(filteredMatches, key = { it.id }) { match ->
                             ModernMatchCard(
                                 match = match,

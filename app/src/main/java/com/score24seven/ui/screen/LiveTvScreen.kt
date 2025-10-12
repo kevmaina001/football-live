@@ -32,6 +32,8 @@ import com.score24seven.ui.design.tokens.Spacing
 import com.score24seven.ui.state.UiState
 import com.score24seven.ui.viewmodel.HomeViewModel
 import com.score24seven.util.Config
+import com.score24seven.ads.BannerAdManager
+import com.score24seven.ads.NativeAdManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -177,10 +179,23 @@ private fun LiveMatchesList(
         contentPadding = PaddingValues(horizontal = Spacing.sm, vertical = Spacing.xs),
         verticalArrangement = Arrangement.spacedBy(Spacing.xs)
     ) {
+        // Banner Ad at top
+        item {
+            BannerAdManager.BannerAdView()
+        }
+        // Native Ad
+        item {
+            NativeAdManager.SimpleNativeAdCard()
+        }
+
+
         // Group matches by league
         val matchesByLeague = matches.groupBy { it.league }
 
-        matchesByLeague.forEach { (league, leagueMatches) ->
+        matchesByLeague.entries.toList().forEachIndexed { index, entry ->
+            val league = entry.key
+            val leagueMatches = entry.value
+
             // League header
             item {
                 LeagueHeader(league = league, matchCount = leagueMatches.size)

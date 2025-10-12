@@ -47,6 +47,8 @@ import com.score24seven.ui.design.tokens.Spacing
 import com.score24seven.ui.state.*
 import com.score24seven.ui.viewmodel.MatchDetailViewModel
 import com.score24seven.domain.model.*
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.score24seven.ads.BannerAdManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -194,6 +196,13 @@ private fun ModernMatchDetailContent(
                 onAction(MatchDetailAction.SelectTab(tab))
             }
         )
+
+        // Banner Ad
+        Box(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            BannerAdManager.BannerAdView()
+        }
 
         // Tab Content
         Box(
@@ -1376,10 +1385,11 @@ private fun HeadToHeadContent(matches: List<Match>, currentMatch: Match) {
         }
 
         item {
+            val isDark = isSystemInDarkTheme()
             Text(
                 text = "Recent Matches",
                 style = MaterialTheme.typography.titleLarge.copy(
-                    color = Color(0xFFFFB000),
+                    color = if (isDark) Color(0xFFFFB000) else Color(0xFFD97706),
                     fontWeight = FontWeight.Bold
                 ),
                 modifier = Modifier.padding(vertical = 8.dp)
@@ -1408,9 +1418,6 @@ private fun HeadToHeadSummaryCard(matches: List<Match>, currentMatch: Match) {
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
         )
     ) {
         Column(
@@ -1421,9 +1428,17 @@ private fun HeadToHeadSummaryCard(matches: List<Match>, currentMatch: Match) {
                 style = MaterialTheme.typography.titleLarge.copy(
                     color = Color(0xFFFFB000),
                     fontWeight = FontWeight.Bold
-                ),
-                modifier = Modifier.padding(bottom = 16.dp)
+                )
             )
+
+            Text(
+                text = "Last ${matches.size} matches",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1447,23 +1462,16 @@ private fun HeadToHeadSummaryCard(matches: List<Match>, currentMatch: Match) {
                     totalMatches = matches.size
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Last ${matches.size} matches",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color(0xFF9CA3AF)
-                ),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
     }
 }
 
 @Composable
-private fun RecordColumn(title: String, wins: Int, totalMatches: Int) {
+private fun RecordColumn(
+    title: String,
+    wins: Int,
+    totalMatches: Int
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -1482,7 +1490,6 @@ private fun RecordColumn(title: String, wins: Int, totalMatches: Int) {
         Text(
             text = wins.toString(),
             style = MaterialTheme.typography.headlineMedium.copy(
-                color = Color.White,
                 fontWeight = FontWeight.Bold
             )
         )
@@ -1490,7 +1497,7 @@ private fun RecordColumn(title: String, wins: Int, totalMatches: Int) {
         Text(
             text = if (totalMatches > 0) "${(wins * 100 / totalMatches)}%" else "0%",
             style = MaterialTheme.typography.bodySmall.copy(
-                color = Color(0xFF6B7280)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         )
     }
@@ -1501,11 +1508,9 @@ private fun HeadToHeadMatchCard(match: Match, currentMatch: Match) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -1513,8 +1518,8 @@ private fun HeadToHeadMatchCard(match: Match, currentMatch: Match) {
             // Date and competition
             Text(
                 text = "${match.league.name} • ${match.fixture.dateTime.toLocalDate()}",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = Color(0xFF9CA3AF)
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
 
@@ -1529,7 +1534,6 @@ private fun HeadToHeadMatchCard(match: Match, currentMatch: Match) {
                 Text(
                     text = match.homeTeam.name,
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        color = Color.White,
                         fontWeight = FontWeight.Medium
                     ),
                     modifier = Modifier.weight(1f)
@@ -1555,7 +1559,6 @@ private fun HeadToHeadMatchCard(match: Match, currentMatch: Match) {
                 Text(
                     text = match.awayTeam.name,
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        color = Color.White,
                         fontWeight = FontWeight.Medium
                     ),
                     modifier = Modifier.weight(1f),

@@ -25,6 +25,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -141,18 +143,18 @@ class MatchRepositoryImpl @Inject constructor(
             println("🔴 DEBUG: $errorMsg")
             e.printStackTrace()
 
-            // Use mock data for network issues or when no cached data available
+            // FIXED: Always use cached/mock data on network errors - NO error messages to user
             val cachedData = matchDao.getLiveMatchesList().map { MatchEntityMapper.mapEntityToDomain(it) }
-            if (mockDataProvider.shouldUseMockDataForException(e) || cachedData.isEmpty()) {
-                println("🟡 DEBUG: Network issue detected or no cached data, using mock data")
+            if (cachedData.isNotEmpty()) {
+                println("🟡 DEBUG: Network issue (SSL/connection), using cached data silently")
+                emit(Resource.Success(
+                    data = cachedData
+                ))
+            } else {
+                println("🟡 DEBUG: Network issue, no cache, using mock data")
                 mockDataProvider.setUsingMockData(true)
                 emit(Resource.Success(
                     data = mockDataProvider.getMockLiveMatches()
-                ))
-            } else {
-                emit(Resource.Error(
-                    message = errorMsg,
-                    data = cachedData
                 ))
             }
         }

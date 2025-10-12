@@ -58,15 +58,9 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun startAutoRefresh() {
-        viewModelScope.launch {
-            while (true) {
-                delay(30000) // Auto-refresh every 30 seconds
-                println("🔄 DEBUG: Auto-refreshing home screen data")
-                loadLiveMatches()
-                delay(1000)
-                loadTodayMatches()
-            }
-        }
+        // DISABLED: Auto-refresh causes visible UI flickering
+        // Live updates are now handled by LiveMatchMonitorService via WebSocket
+        // Manual refresh is available via pull-to-refresh
     }
 
     fun handleAction(action: HomeScreenAction) {

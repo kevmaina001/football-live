@@ -21,6 +21,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,8 +35,15 @@ class LeaguesViewModel @Inject constructor(
     private val _state = MutableStateFlow(LeaguesState())
     val state: StateFlow<LeaguesState> = _state.asStateFlow()
 
+    private var autoRefreshJob: Job? = null
+
     init {
         loadFavoriteLeagues()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopAutoRefresh()
     }
 
     private fun loadFavoriteLeagues() {
@@ -70,6 +79,9 @@ class LeaguesViewModel @Inject constructor(
 
         val currentSeason = league.season ?: 2024
         loadLeagueData(league.id, currentSeason)
+
+        // Start auto-refresh for live standings updates
+        startAutoRefresh(league.id, currentSeason)
     }
 
     private fun loadLeagueData(leagueId: Int, season: Int) {
@@ -155,6 +167,45 @@ class LeaguesViewModel @Inject constructor(
             val season = selectedLeague.season ?: 2025  // Use current season
             loadLeagueData(selectedLeague.id, season)
         }
+    }
+
+    /**
+     * Start auto-refresh for standings during live matches
+     * Refreshes every 2 minutes to keep standings up-to-date during live games
+     */
+    private fun startAutoRefresh(leagueId: Int, season: Int) {
+        stopAutoRefresh() // Stop any existing refresh job
+
+        autoRefreshJob = viewModelScope.launch {
+            while (true) {
+                delay(120_000L) // 2 minutes
+                println("🔄 DEBUG: LeaguesViewModel - Auto-refreshing standings for league $leagueId")
+
+                // Refresh standings only (most frequently updated during live matches)
+                standingRepository.refreshStandings(leagueId, season).let { resource ->
+                    when (resource) {
+                        is Resource.Success -> {
+                            println("✅ DEBUG: LeaguesViewModel - Auto-refresh successful: ${resource.data?.size ?: 0} standings")
+                            _state.update { it.copy(standings = UiState.Success(resource.data ?: emptyList())) }
+                        }
+                        is Resource.Error -> {
+                            println("❌ DEBUG: LeaguesViewModel - Auto-refresh failed: ${resource.message}")
+                        }
+                        is Resource.Loading -> {
+                            // Ignore loading state during auto-refresh to avoid UI flicker
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Stop auto-refresh when view model is cleared or league changes
+     */
+    private fun stopAutoRefresh() {
+        autoRefreshJob?.cancel()
+        autoRefreshJob = null
     }
 
     private fun getCountryFlag(country: String?): String? {

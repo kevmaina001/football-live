@@ -67,18 +67,18 @@ object Colors {
     val SerieA = Color(0xFF008FD7)           // Serie A Blue
     val Bundesliga = Color(0xFFD20515)       // Bundesliga Red
 
-    // Light Theme Colors (optional, dark first approach)
+    // Light Theme Colors - Enhanced for better UI
     object Light {
-        val Background = Color(0xFFFFFFFF)
-        val Surface = Color(0xFFF9FAFB)
-        val SurfaceVariant = Color(0xFFF3F4F6)
-        val OnBackground = Color(0xFF111827)
-        val OnSurface = Color(0xFF111827)
-        val TextPrimary = Color(0xFF111827)
-        val TextSecondary = Color(0xFF6B7280)
-        val TextTertiary = Color(0xFF9CA3AF)
-        val Divider = Color(0xFFE5E7EB)
-        val Border = Color(0xFFD1D5DB)
+        val Background = Color(0xFFF8FAFC)          // Soft off-white background
+        val Surface = Color(0xFFFFFFFF)             // Pure white surface
+        val SurfaceVariant = Color(0xFFF1F5F9)      // Light blue-gray variant
+        val OnBackground = Color(0xFF0F172A)        // Deep slate text
+        val OnSurface = Color(0xFF1E293B)           // Slate text
+        val TextPrimary = Color(0xFF0F172A)         // Deep slate for primary text
+        val TextSecondary = Color(0xFF64748B)       // Medium slate for secondary
+        val TextTertiary = Color(0xFF94A3B8)        // Light slate for tertiary
+        val Divider = Color(0xFFE2E8F0)             // Subtle divider
+        val Border = Color(0xFFCBD5E1)              // Soft border
     }
 
     // Gradient Colors

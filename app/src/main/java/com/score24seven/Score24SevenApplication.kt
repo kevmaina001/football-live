@@ -14,6 +14,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import com.score24seven.util.PreferencesManager
 import com.score24seven.service.NotificationService
+import android.content.Intent
+import com.score24seven.service.LiveMatchMonitorService
+import com.score24seven.ads.AdManager
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -22,6 +25,9 @@ class Score24SevenApplication : Application() {
 
     @Inject
     lateinit var notificationService: NotificationService
+
+    @Inject
+    lateinit var adManager: AdManager
 
     companion object {
         lateinit var instance: Score24SevenApplication
@@ -48,10 +54,21 @@ class Score24SevenApplication : Application() {
         // - Push notifications
         // - WebSocket service
 
+        // Initialize AdManager for ads
+        adManager.toString() // Access the service to ensure it's initialized
+        println("📱 DEBUG: AdManager initialized")
+
         // Initialize notification service for favorite matches
         // This triggers the service to start observing favorite matches
         notificationService.toString() // Access the service to ensure it's initialized
         println("🔔 DEBUG: NotificationService initialized and observing favorite matches")
+
+        // Start LiveMatchMonitorService for instant WebSocket-based notifications
+        if (preferencesManager.getNotificationsEnabled()) {
+            val serviceIntent = Intent(this, LiveMatchMonitorService::class.java)
+            startService(serviceIntent)
+            println("🔔 DEBUG: LiveMatchMonitorService started for instant notifications")
+        }
     }
 
     private fun initializeAppSettings() {
